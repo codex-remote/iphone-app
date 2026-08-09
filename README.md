@@ -14,6 +14,10 @@ SwiftUI 移动控制台。App 通过 WebSocket 连接 Relay，列出 Mac 上的�
 
 当前是单用户、单 Mac、全局单 Turn MVP。没有登录、设备管理、业务 Task、队列和服务端历史。
 
+## 发布状态
+
+当前为 **Unreleased**，尚未形成生产兼容基线。首个正式版本发布前允许直接进行破坏性调整，不提供旧协议、旧设置或旧本地数据兼容；所有重要变更记录在 [CHANGELOG.md](CHANGELOG.md)。
+
 ## 运行
 
 1. 启动 Relay Server 和 Mac Agent。
