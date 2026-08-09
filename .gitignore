@@ -14,3 +14,4 @@ xcuserdata/
 *.dSYM
 Secrets.xcconfig
 Local.xcconfig
+artifacts/

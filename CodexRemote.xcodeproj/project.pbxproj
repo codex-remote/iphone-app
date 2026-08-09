@@ -1,0 +1,87 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* CodexRemoteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* CodexRemoteApp.swift */; };
+		A10000000000000000000002 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* AppTheme.swift */; };
+		A10000000000000000000003 /* RelayModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* RelayModels.swift */; };
+		A10000000000000000000004 /* RelayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004 /* RelayService.swift */; };
+		A10000000000000000000005 /* MockRelayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005 /* MockRelayService.swift */; };
+		A10000000000000000000006 /* WorkspaceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000006 /* WorkspaceViewModel.swift */; };
+		A10000000000000000000007 /* WorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000007 /* WorkspaceView.swift */; };
+		A10000000000000000000008 /* StatusStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* StatusStrip.swift */; };
+		A10000000000000000000009 /* ConsoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000009 /* ConsoleView.swift */; };
+		A1000000000000000000000A /* PromptComposer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000A /* PromptComposer.swift */; };
+		A1000000000000000000000B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000B /* SettingsView.swift */; };
+		A1000000000000000000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000C /* Assets.xcassets */; };
+		A1000000000000000000000D /* RelayClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000D /* RelayClient.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B10000000000000000000000 /* Codex Remote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Codex Remote.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000001 /* CodexRemoteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexRemoteApp.swift; sourceTree = "<group>"; };
+		B10000000000000000000002 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		B10000000000000000000003 /* RelayModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelayModels.swift; sourceTree = "<group>"; };
+		B10000000000000000000004 /* RelayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelayService.swift; sourceTree = "<group>"; };
+		B10000000000000000000005 /* MockRelayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRelayService.swift; sourceTree = "<group>"; };
+		B10000000000000000000006 /* WorkspaceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceViewModel.swift; sourceTree = "<group>"; };
+		B10000000000000000000007 /* WorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceView.swift; sourceTree = "<group>"; };
+		B10000000000000000000008 /* StatusStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusStrip.swift; sourceTree = "<group>"; };
+		B10000000000000000000009 /* ConsoleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000A /* PromptComposer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptComposer.swift; sourceTree = "<group>"; };
+		B1000000000000000000000B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B1000000000000000000000D /* RelayClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelayClient.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C10000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D10000000000000000000000 = {isa = PBXGroup; children = (D10000000000000000000001 /* CodexRemote */, D10000000000000000000002 /* Products */); sourceTree = "<group>"; };
+		D10000000000000000000001 /* CodexRemote */ = {isa = PBXGroup; path = CodexRemote; sourceTree = "<group>"; children = (D10000000000000000000003 /* App */, D10000000000000000000004 /* Core */, D10000000000000000000005 /* Models */, D10000000000000000000006 /* Services */, D10000000000000000000007 /* Features */, B1000000000000000000000C /* Assets.xcassets */); };
+		D10000000000000000000002 /* Products */ = {isa = PBXGroup; children = (B10000000000000000000000 /* Codex Remote.app */); name = Products; sourceTree = "<group>"; };
+		D10000000000000000000003 /* App */ = {isa = PBXGroup; path = App; sourceTree = "<group>"; children = (B10000000000000000000001 /* CodexRemoteApp.swift */); };
+		D10000000000000000000004 /* Core */ = {isa = PBXGroup; path = Core; sourceTree = "<group>"; children = (B10000000000000000000002 /* AppTheme.swift */); };
+		D10000000000000000000005 /* Models */ = {isa = PBXGroup; path = Models; sourceTree = "<group>"; children = (B10000000000000000000003 /* RelayModels.swift */); };
+		D10000000000000000000006 /* Services */ = {isa = PBXGroup; path = Services; sourceTree = "<group>"; children = (B10000000000000000000004 /* RelayService.swift */, B1000000000000000000000D /* RelayClient.swift */, B10000000000000000000005 /* MockRelayService.swift */); };
+		D10000000000000000000007 /* Features */ = {isa = PBXGroup; path = Features; sourceTree = "<group>"; children = (D10000000000000000000008 /* Workspace */, D10000000000000000000009 /* Settings */); };
+		D10000000000000000000008 /* Workspace */ = {isa = PBXGroup; path = Workspace; sourceTree = "<group>"; children = (B10000000000000000000006 /* WorkspaceViewModel.swift */, B10000000000000000000007 /* WorkspaceView.swift */, B10000000000000000000008 /* StatusStrip.swift */, B10000000000000000000009 /* ConsoleView.swift */, B1000000000000000000000A /* PromptComposer.swift */); };
+		D10000000000000000000009 /* Settings */ = {isa = PBXGroup; path = Settings; sourceTree = "<group>"; children = (B1000000000000000000000B /* SettingsView.swift */); };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E10000000000000000000001 /* CodexRemote */ = {isa = PBXNativeTarget; buildConfigurationList = F10000000000000000000002 /* Build configuration list for PBXNativeTarget CodexRemote */; buildPhases = (C10000000000000000000002 /* Sources */, C10000000000000000000001 /* Frameworks */, C10000000000000000000003 /* Resources */); buildRules = (); dependencies = (); name = CodexRemote; productName = CodexRemote; productReference = B10000000000000000000000 /* Codex Remote.app */; productType = "com.apple.product-type.application"; };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E10000000000000000000000 /* Project object */ = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = 1; LastSwiftUpdateCheck = 2620; LastUpgradeCheck = 2620; TargetAttributes = {E10000000000000000000001 = {CreatedOnToolsVersion = 26.2;};};}; buildConfigurationList = F10000000000000000000001 /* Build configuration list for PBXProject CodexRemote */; compatibilityVersion = "Xcode 16.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = D10000000000000000000000; productRefGroup = D10000000000000000000002 /* Products */; projectDirPath = ""; projectRoot = ""; targets = (E10000000000000000000001 /* CodexRemote */); };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C10000000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000C /* Assets.xcassets in Resources */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C10000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, A10000000000000000000004, A10000000000000000000005, A1000000000000000000000D, A10000000000000000000006, A10000000000000000000007, A10000000000000000000008, A10000000000000000000009, A1000000000000000000000A, A1000000000000000000000B); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F20000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; CLANG_WARN_BOOL_CONVERSION = YES; CLANG_WARN_COMMA = YES; CLANG_WARN_CONSTANT_CONVERSION = YES; CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES; CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR; CLANG_WARN_EMPTY_BODY = YES; CLANG_WARN_ENUM_CONVERSION = YES; CLANG_WARN_INFINITE_RECURSION = YES; CLANG_WARN_INT_CONVERSION = YES; CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES; CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES; CLANG_WARN_OBJC_LITERAL_CONVERSION = YES; CLANG_WARN_RANGE_LOOP_ANALYSIS = YES; CLANG_WARN_STRICT_PROTOTYPES = YES; CLANG_WARN_SUSPICIOUS_MOVE = YES; CLANG_WARN_UNREACHABLE_CODE = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; GCC_C_LANGUAGE_STANDARD = gnu17; GCC_NO_COMMON_BLOCKS = YES; GCC_OPTIMIZATION_LEVEL = 0; GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)"); IPHONEOS_DEPLOYMENT_TARGET = 17.0; MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE; ONLY_ACTIVE_ARCH = YES; SDKROOT = iphoneos; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone";}; name = Debug; };
+		F20000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; CLANG_WARN_BOOL_CONVERSION = YES; CLANG_WARN_COMMA = YES; CLANG_WARN_CONSTANT_CONVERSION = YES; CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES; CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR; CLANG_WARN_EMPTY_BODY = YES; CLANG_WARN_ENUM_CONVERSION = YES; CLANG_WARN_INFINITE_RECURSION = YES; CLANG_WARN_INT_CONVERSION = YES; CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES; CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES; CLANG_WARN_OBJC_LITERAL_CONVERSION = YES; CLANG_WARN_RANGE_LOOP_ANALYSIS = YES; CLANG_WARN_STRICT_PROTOTYPES = YES; CLANG_WARN_SUSPICIOUS_MOVE = YES; CLANG_WARN_UNREACHABLE_CODE = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = NO; GCC_C_LANGUAGE_STANDARD = gnu17; GCC_NO_COMMON_BLOCKS = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; MTL_ENABLE_DEBUG_INFO = NO; SDKROOT = iphoneos; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_OPTIMIZATION_LEVEL = "-O"; VALIDATE_PRODUCT = YES;}; name = Release; };
+			F20000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; DEVELOPMENT_TEAM = ""; ENABLE_PREVIEWS = YES; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = "Codex Remote"; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools"; INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES; INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Connect to your AI Coding Remote Relay Server on the local network."; INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.codexremote.app; PRODUCT_NAME = "$(TARGET_NAME)"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1;}; name = Debug; };
+			F20000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; DEVELOPMENT_TEAM = ""; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = "Codex Remote"; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools"; INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES; INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Connect to your AI Coding Remote Relay Server on the local network."; INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.codexremote.app; PRODUCT_NAME = "$(TARGET_NAME)"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1;}; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F10000000000000000000001 /* Build configuration list for PBXProject CodexRemote */ = {isa = XCConfigurationList; buildConfigurations = (F20000000000000000000001 /* Debug */, F20000000000000000000002 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		F10000000000000000000002 /* Build configuration list for PBXNativeTarget CodexRemote */ = {isa = XCConfigurationList; buildConfigurations = (F20000000000000000000003 /* Debug */, F20000000000000000000004 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = E10000000000000000000000 /* Project object */;
+}

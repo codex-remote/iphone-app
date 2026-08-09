@@ -1,89 +1,82 @@
 # AI Coding Remote - iPhone App
 
-AI Coding Remote 的移动控制端。使用 SwiftUI 构建，通过 WebSocket 连接 Relay Server，向一台 Mac Agent 发起 Codex Run，并实时展示状态、输出和结果。
+SwiftUI 移动控制台。App 通过 WebSocket 连接 Relay，列出 Mac 上的多个 Git 项目与 Codex 历史会话，在新会话或已有会话中启动 Turn，并实时展示输出和结果。
 
-## 当前状态
+## 当前能力
 
-仓库已初始化，尚未生成 Xcode 工程或业务代码。
+- 真实 `URLSessionWebSocketTask` Relay Client。
+- Relay URL 本地设置和自动重连。
+- 多 Project 选择与刷新。
+- Project 下的 Codex Thread 列表、新会话和继续会话。
+- Prompt、执行、中断、assistant/stdout/stderr Console。
+- 完成、失败、中断结果和最近日志恢复。
+- 本地 Mock 场景用于空闲、运行、完成、失败和离线 UI 验证。
 
-当前实现基线是单用户 MVP：无登录、无设备管理、无任务列表、无服务端历史。Relay 必须运行在 Tailscale 等私有网络中。
+当前是单用户、单 Mac、全局单 Turn MVP。没有登录、设备管理、业务 Task、队列和服务端历史。
 
-## 本仓库负责
+## 运行
 
-- Relay URL 的本地配置。
-- WebSocket 连接、断线重连和前后台生命周期。
-- Mac Agent 的在线、空闲和运行中状态展示。
-- Prompt 输入、启动和停止当前 Run。
-- stdout、stderr 和系统事件的实时 Console。
-- 完成、失败、取消结果和 Git Diff 摘要展示。
-- 使用 `run.snapshot` 恢复当前页面和最近日志。
+1. 启动 Relay Server 和 Mac Agent。
+2. 使用 Xcode 打开 `CodexRemote.xcodeproj`。
+3. 选择 iPhone Simulator 或真机，运行 `CodexRemote` Scheme。
+4. 在右上角 Settings 填入 `ws://<局域网-IP>:8080/ws/app`。
 
-## 本仓库不负责
+Debug 构建也可从命令行验证：
 
-- Relay 消息路由和连接注册。
-- Codex CLI 的启动、参数和本地进程管理。
-- 用户鉴权、设备配对、数据库和 Task 管理。
-- 修改 Mac 工作目录或传递任意 Shell 命令。
-
-## 项目边界
-
-本仓库不依赖 `relay-server` 或 `mac-agent` 的源码。三端只通过版本化 JSON 协议协作：
-
-- 协议版本：`spec_version: "1.0"`
-- App 连接端点：`/ws/app`
-- Relay 协议 Schema 和 Fixtures 是线上的协议权威来源。
-- Swift 模型必须通过相同 Fixtures 的契约测试。
-- 新增协议字段必须保持向后兼容；UI 不直接拼装或解析原始 JSON。
-
-本地架构说明位于：`../Codex Remote/02-通信协议/MVP WebSocket 协议.md`。
-
-## MVP 界面
-
-第一版只需要一个主工作台：
-
-```text
-Connection Status
-Mac: Online / Idle / Running
-
-Run Console
---------------------------------
-Streaming stdout/stderr...
---------------------------------
-
-Prompt Editor
-[ Run ] / [ Stop ]
+```bash
+xcodebuild \
+  -project CodexRemote.xcodeproj \
+  -scheme CodexRemote \
+  -sdk iphonesimulator \
+  -configuration Debug \
+  CODE_SIGNING_ALLOWED=NO \
+  build
 ```
 
-建议代码边界：
+iOS 会请求本地网络权限。Relay 没有应用层鉴权，必须处于可信局域网或私有网络中。
+
+## Mock 场景
+
+右上角省略号菜单可切换 UI 状态。模拟器也可以带启动参数：
 
 ```text
-AICodingRemote/
-├── App/
-├── Features/Console/
-├── Services/RelayClient.swift
-├── Models/Message.swift
-└── Models/RunState.swift
+--demo-running
+--demo-completed
+--demo-failed
+--demo-offline
 ```
 
-SwiftUI View 只依赖 `RunState` 和 ViewModel；网络连接、协议编解码和重连逻辑放在 `RelayClient`。
+未提供 Demo 参数时，App 使用真实 `RelayClient`。
 
-## 计划中的本地配置
+## 协议边界
 
-- Relay WebSocket URL，例如 `wss://relay.example.ts.net/ws/app`
-- Console 最大保留行数
-- 自动重连开关
+- 协议：`spec_version: "2.0"`
+- App 入口：`/ws/app`
+- App 发送：`project.list`、`thread.list`、`turn.start`、`turn.interrupt`
+- App 接收：Agent 状态、Project/Thread Snapshot、Turn 事件
+- SwiftUI View 不直接拼装或解析 JSON
 
-配置存储在 iPhone 本地，不提交环境地址或个人信息到 Git。
+不兼容旧 `1.0 run.*` 协议。
 
-## MVP 验收
+## 结构
 
-- 真机可以连接 Relay 并看到 Mac 在线状态。
-- 可以发送 Prompt 并看到 `run.started`。
-- 可以连续展示 stdout 和 stderr。
-- Stop 可以取消当前 Run。
-- App 切到后台再回来后可以重连并恢复快照。
-- 长日志不会导致界面明显卡顿或内存持续增长。
+```text
+CodexRemote/
+├── App/CodexRemoteApp.swift
+├── Core/AppTheme.swift
+├── Features/
+│   ├── Settings/SettingsView.swift
+│   └── Workspace/
+│       ├── WorkspaceView.swift
+│       ├── WorkspaceViewModel.swift
+│       ├── PromptComposer.swift
+│       ├── ConsoleView.swift
+│       └── StatusStrip.swift
+├── Models/RelayModels.swift
+└── Services/
+    ├── RelayService.swift
+    ├── RelayClient.swift
+    └── MockRelayService.swift
+```
 
-## 后续扩展
-
-未来的登录、设备列表、Task 历史和多项目选择通过新增 Service 和 Feature 接入，不改变现有 Console 与 `run.*` 执行协议。
+未来登录、设备列表、业务 Task 历史和多 Mac 通过新增 Service/Feature 接入；Project/Thread/Turn 工作台保持独立于传输实现。
