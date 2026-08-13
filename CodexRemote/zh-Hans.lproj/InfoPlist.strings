@@ -1,0 +1,2 @@
+"NSMicrophoneUsageDescription" = "使用麦克风向 Codex 口述任务。";
+"NSSpeechRecognitionUsageDescription" = "将你口述的任务转换为文字。";

@@ -1,402 +1,352 @@
 import SwiftUI
+import UIKit
+
+enum WorkspaceScreen: Equatable {
+    case project(String?)
+    case task(projectID: String, threadID: String?)
+    case activity
+    case settings
+}
 
 struct WorkspaceView: View {
     @ObservedObject var viewModel: WorkspaceViewModel
-    @State private var isShowingSettings = false
+    @State private var screen: WorkspaceScreen
+    @State private var isDrawerOpen = false
+    @State private var expandedProjectIDs: Set<String> = []
+    @State private var startupMinimumElapsed = false
+    @State private var startupTimeoutElapsed = false
+    @State private var isExecutionDetailsPresented = false
+    @State private var isNewSessionPickerPresented = false
+    @FocusState private var isComposerFocused: Bool
+
+    init(viewModel: WorkspaceViewModel) {
+        self.viewModel = viewModel
+        let arguments = ProcessInfo.processInfo.arguments
+        let projectID = arguments.contains("--demo-project") ? "project_codexremote" : nil
+        let startsOpen = arguments.contains("--demo-drawer")
+        let initialScreen: WorkspaceScreen
+        if arguments.contains("--demo-settings") {
+            initialScreen = .settings
+        } else {
+            initialScreen = .project(projectID)
+        }
+        _screen = State(initialValue: initialScreen)
+        _isDrawerOpen = State(initialValue: startsOpen)
+    }
 
     var body: some View {
-        NavigationStack {
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(spacing: 0) {
-                        ProjectContextBar(viewModel: viewModel)
-                            .padding(.bottom, 18)
+        GeometryReader { proxy in
+            let drawerReveal = min(proxy.size.width * 0.76, 324)
+            let fallbackCornerRadius: CGFloat = 44
+            let panelCornerRadius = isDrawerOpen ? fallbackCornerRadius : 0
+            let panelBorderOpacity = isDrawerOpen ? 0.1 : 0
+            let safeAreaInsets = activeWindowSafeAreaInsets
 
-                        if viewModel.turnPhase == .idle {
-                            EmptyTaskView(
-                                isOffline: viewModel.connectionState == .disconnected,
-                                projectName: viewModel.selectedProject?.name,
-                                projectCount: viewModel.projects.count
-                            )
-                                .containerRelativeFrame(.vertical, count: 10, span: 7, spacing: 0)
-                        } else {
-                            conversation
+            SlidingWorkspaceContainer(
+                isProjectManagerVisible: $isDrawerOpen,
+                projectManagerWidth: drawerReveal,
+                projectManager: {
+                    ProjectDrawer(
+                        viewModel: viewModel,
+                        screen: screen,
+                        onSelectProject: { project in
+                            viewModel.selectProject(project.id)
+                        },
+                        onSelectThread: { project, thread in
+                            focusThread(project: project, thread: thread)
+                        },
+                        onNewTask: { project in
+                            focusNewTask(project: project)
+                        },
+                        onActivity: {
+                            isComposerFocused = false
+                            screen = .activity
+                            closeProjectManager()
+                        },
+                        onSettings: {
+                            isComposerFocused = false
+                            screen = .settings
+                            closeProjectManager()
+                        },
+                        expandedProjectIDs: $expandedProjectIDs
+                    )
+                    .padding(.top, safeAreaInsets.top)
+                    .padding(.bottom, safeAreaInsets.bottom)
+                    .frame(width: drawerReveal, height: proxy.size.height, alignment: .topLeading)
+                    .background(AppTheme.background)
+                },
+                workspace: {
+                    NavigationStack {
+                        VStack(spacing: 0) {
+                            if let capabilities = viewModel.executionCapabilities, capabilities.restricted {
+                                ExecutionRestrictionBanner(permissionProfileID: viewModel.selectedExecutionProfile?.id) {
+                                    isExecutionDetailsPresented = true
+                                }
+                            }
+                            screenContent
+                        }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(AppTheme.background)
+                            .navigationBarTitleDisplayMode(.inline)
+                            .toolbar {
+                                ToolbarItem(placement: .topBarLeading) {
+                                    Button {
+                                        toggleProjectManager()
+                                    } label: {
+                                        Image(systemName: "sidebar.left")
+                                    }
+                                    .accessibilityLabel(isDrawerOpen ? "Close sidebar" : "Open sidebar")
+                                    .accessibilityIdentifier("workspace.sidebar.toggle")
+                                }
+
+                                ToolbarItem(placement: .principal) { navigationTitle }
+                                ToolbarItemGroup(placement: .topBarTrailing) {
+                                    Button {
+                                        isComposerFocused = false
+                                        isNewSessionPickerPresented = true
+                                    } label: {
+                                        Image(systemName: "square.and.pencil")
+                                    }
+                                    .accessibilityLabel("New session")
+                                    .accessibilityIdentifier("workspace.newSession")
+
+                                    trailingToolbar
+                                }
+                            }
+                    }
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                    .background(AppTheme.background)
+                    .accessibilityIdentifier("workspace.content")
+                    .modifier(
+                        DeviceConcentricSurface(
+                            fallbackRadius: panelCornerRadius,
+                            borderOpacity: panelBorderOpacity
+                        )
+                    )
+                    .overlay(alignment: .leading) {
+                        if isDrawerOpen {
+                            Rectangle()
+                                .fill(Color.black.opacity(0.13))
+                                .frame(width: 1)
+                                .padding(.vertical, fallbackCornerRadius + 18)
+                                .offset(x: -2)
+                                .blur(radius: 9)
+                                .allowsHitTesting(false)
                         }
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
-                    .padding(.bottom, 20)
-                }
-                .background(AppTheme.background)
-                .scrollDismissesKeyboard(.interactively)
-                .onChange(of: viewModel.logs.last?.id) { _, id in
-                    guard let id else { return }
-                    withAnimation(.easeOut(duration: 0.2)) {
-                        proxy.scrollTo(id, anchor: .bottom)
+                    .overlay {
+                        if isDrawerOpen {
+                            Color.white.opacity(0.48)
+                                .allowsHitTesting(false)
+                        }
                     }
                 }
-                .onChange(of: viewModel.turnPhase) { _, phase in
-                    guard phase.isTerminal else { return }
-                    withAnimation(.easeOut(duration: 0.28)) {
-                        proxy.scrollTo("run-result", anchor: .bottom)
-                    }
-                }
-            }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                PromptComposer(
-                    prompt: $viewModel.prompt,
-                    isRunning: viewModel.isRunning,
-                    canRun: viewModel.canRun,
-                    projectName: viewModel.selectedProject?.name,
-                    action: viewModel.primaryAction
-                )
-                .padding(.horizontal, 14)
-                .padding(.top, 8)
-                .padding(.bottom, 8)
-                .background(AppTheme.background.opacity(0.97))
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Image(systemName: "hexagon")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(AppTheme.textPrimary)
-                }
-                ToolbarItem(placement: .principal) {
-                    HStack(spacing: 4) {
-                        Text("Codex")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("Remote")
-                            .font(.system(size: 16))
-                            .foregroundStyle(AppTheme.textSecondary)
-                    }
-                }
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    previewMenu
-                    Button {
-                        isShowingSettings = true
-                    } label: {
-                        Image(systemName: "slider.horizontal.3")
-                    }
-                    .help("Settings")
-                }
-            }
-            .toolbarBackground(AppTheme.background, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .sheet(isPresented: $isShowingSettings) {
-                SettingsView(viewModel: viewModel)
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
-            }
-        }
-        .tint(AppTheme.textPrimary)
-    }
-
-    private var previewMenu: some View {
-        Menu {
-            Section("Preview state") {
-                ForEach(DemoScenario.allCases) { scenario in
-                    Button {
-                        viewModel.loadScenario(scenario)
-                    } label: {
-                        Label(scenario.label, systemImage: scenario.symbol)
-                    }
-                }
-            }
-        } label: {
-            Image(systemName: "ellipsis")
-        }
-        .help("Preview state")
-    }
-
-    private var conversation: some View {
-        LazyVStack(alignment: .leading, spacing: 22) {
-            WorkspaceHeader(
-                agentName: viewModel.agentName,
-                projectName: viewModel.selectedProject?.name ?? "No project",
-                connection: viewModel.connectionState,
-                agent: viewModel.agentState
             )
-
-            HStack {
-                Spacer(minLength: 42)
-                Text(viewModel.submittedPrompt ?? viewModel.prompt)
-                    .font(.system(size: 15))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 11)
-                    .background(AppTheme.surfaceMuted)
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .background(AppTheme.background)
+            .clipped()
+            .accessibilityAction(.escape) {
+                if isDrawerOpen { closeProjectManager() }
             }
-
-            VStack(alignment: .leading, spacing: 14) {
-                CodexHeading(phase: viewModel.turnPhase, startedAt: viewModel.startedAt)
-
-                ConsoleView(
-                    logs: viewModel.logs.filter { !$0.text.localizedCaseInsensitiveContains("relay session") && !$0.text.localizedCaseInsensitiveContains("handshake") },
-                    isRunning: viewModel.isRunning,
-                    onClear: viewModel.clearConsole
-                )
-
-                if let result = viewModel.result {
-                    TurnResultView(phase: viewModel.turnPhase, result: result)
-                        .id("run-result")
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                } else if viewModel.isRunning {
-                    HStack(spacing: 8) {
-                        ProgressView()
-                            .controlSize(.small)
-                        Text("Codex is working")
-                            .font(.system(size: 13))
-                            .foregroundStyle(AppTheme.textSecondary)
-                    }
-                    .padding(.top, 2)
-                }
+            .animation(.snappy(duration: 0.32, extraBounce: 0.04), value: isDrawerOpen)
+        }
+        .ignoresSafeArea(.container)
+        .tint(AppTheme.textPrimary)
+        .overlay {
+            if shouldShowStartupOverlay {
+                StartupLoadingOverlay(statusKey: startupStatusKey)
+                    .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: viewModel.turnPhase)
+        .task {
+            await runStartupOverlayTiming()
+        }
+        .sheet(isPresented: $isNewSessionPickerPresented) {
+            NewSessionProjectPicker(projects: viewModel.projects) { project in
+                isNewSessionPickerPresented = false
+                focusNewTask(project: project)
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $isExecutionDetailsPresented) {
+            if let capabilities = viewModel.executionCapabilities {
+                ExecutionAccessDetailsView(capabilities: capabilities, permissionProfileID: viewModel.selectedExecutionProfile?.id)
+            }
+        }
     }
-}
 
-private struct ProjectContextBar: View {
-    @ObservedObject var viewModel: WorkspaceViewModel
+    private var shouldShowStartupOverlay: Bool {
+        !startupMinimumElapsed || (isStartupLoading && !startupTimeoutElapsed)
+    }
 
-    var body: some View {
-        HStack(spacing: 10) {
-            Menu {
-                ForEach(viewModel.projects) { project in
-                    Button { viewModel.selectProject(project.id) } label: {
-                        Label(project.name, systemImage: project.id == viewModel.selectedProjectID ? "checkmark" : "folder")
-                    }
-                }
-            } label: {
-                ContextLabel(icon: "folder", title: viewModel.selectedProject?.name ?? "Select project")
+    private var isStartupLoading: Bool {
+        guard viewModel.connectionEnabled else { return false }
+        if viewModel.connectionState == .connecting { return true }
+        if viewModel.connectionState == .connected
+            && viewModel.agentState != .offline
+            && viewModel.projects.isEmpty { return true }
+        return false
+    }
+
+    private var startupStatusKey: LocalizedStringKey {
+        if viewModel.connectionState == .connecting { return "Connecting to Mac Agent…" }
+        if viewModel.connectionState == .connected
+            && viewModel.agentState != .offline
+            && viewModel.projects.isEmpty { return "Loading projects…" }
+        return "Preparing Codex Remote…"
+    }
+
+    private func runStartupOverlayTiming() async {
+        try? await Task.sleep(nanoseconds: 650_000_000)
+        await MainActor.run {
+            withAnimation(.easeOut(duration: 0.24)) {
+                startupMinimumElapsed = true
             }
-            .disabled(viewModel.projects.isEmpty || viewModel.isRunning)
+        }
 
-            Image(systemName: "chevron.right")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(AppTheme.textSecondary.opacity(0.65))
-
-            Menu {
-                Button { viewModel.selectThread(nil) } label: {
-                    Label("New session", systemImage: viewModel.selectedThreadID == nil ? "checkmark" : "plus.bubble")
-                }
-                if !viewModel.threads.isEmpty { Divider() }
-                ForEach(viewModel.threads) { thread in
-                    Button { viewModel.selectThread(thread.id) } label: {
-                        Label(thread.title, systemImage: thread.id == viewModel.selectedThreadID ? "checkmark" : "bubble.left")
-                    }
-                }
-            } label: {
-                ContextLabel(icon: "bubble.left", title: viewModel.selectedThread?.title ?? "New session")
+        try? await Task.sleep(nanoseconds: 1_350_000_000)
+        await MainActor.run {
+            withAnimation(.easeOut(duration: 0.24)) {
+                startupTimeoutElapsed = true
             }
-            .disabled(viewModel.selectedProjectID == nil || viewModel.isRunning)
+        }
+    }
 
-            Spacer(minLength: 0)
+    @ViewBuilder
+    private var screenContent: some View {
+        switch screen {
+        case .project(let projectID):
+            if let project = resolvedProject(projectID) {
+                ProjectDetailView(
+                    viewModel: viewModel,
+                    project: project,
+                    onNewTask: { focusNewTask(project: project) },
+                    onSelectThread: { thread in
+                        focusThread(project: project, thread: thread)
+                    }
+                )
+                .id("project-\(project.id)")
+            } else {
+                EmptyWorkspaceView()
+            }
+        case .task(let projectID, let threadID):
+            if let project = viewModel.projects.first(where: { $0.id == projectID }) {
+                TaskWorkspaceView(
+                    viewModel: viewModel,
+                    turnSession: viewModel.turnSession,
+                    project: project,
+                    thread: viewModel.threads.first(where: { $0.id == threadID }),
+                    composerFocus: $isComposerFocused
+                )
+                .id("task-\(projectID)-\(threadID ?? "new")")
+            } else {
+                EmptyWorkspaceView()
+            }
+        case .activity:
+            ActivityHomeView(viewModel: viewModel) { project, thread in
+                focusThread(project: project, thread: thread)
+            }
+        case .settings:
+            SettingsView(viewModel: viewModel)
+        }
+    }
 
+    @ViewBuilder
+    private var navigationTitle: some View {
+        switch screen {
+        case .project(let projectID):
+            Text(verbatim: resolvedProject(projectID)?.name ?? "Codex Remote")
+                .font(.system(size: 15, weight: .semibold))
+        case .task(let projectID, let threadID):
+            let project = viewModel.projects.first(where: { $0.id == projectID })
+            let thread = viewModel.threads.first(where: { $0.id == threadID })
+            Text(verbatim: thread?.title ?? project?.name ?? "Codex Remote")
+                .font(.system(size: 15, weight: .semibold))
+                .lineLimit(1)
+        case .activity:
+            Text("Activity").font(.system(size: 15, weight: .semibold))
+        case .settings:
+            Text("Settings").font(.system(size: 15, weight: .semibold))
+        }
+    }
+
+    @ViewBuilder
+    private var trailingToolbar: some View {
+        switch screen {
+        case .project(let projectID):
+            if let project = resolvedProject(projectID) {
+                Menu {
+                    Button(action: viewModel.refreshProjects) {
+                        Label("Refresh", systemImage: "arrow.clockwise")
+                    }
+                    Button {
+                        UIPasteboard.general.string = project.path
+                    } label: {
+                        Label("Copy path", systemImage: "doc.on.doc")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+            }
+        case .task:
+            EmptyView()
+        case .activity:
             Button(action: viewModel.refreshProjects) {
                 Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 12, weight: .semibold))
-                    .frame(width: 30, height: 30)
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(AppTheme.textSecondary)
-            .disabled(viewModel.isRunning)
-            .help("Refresh projects")
-        }
-        .frame(height: 38)
-        .padding(.horizontal, 10)
-        .background(AppTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .overlay { RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(AppTheme.border, lineWidth: 1) }
-    }
-}
-
-private struct ContextLabel: View {
-    let icon: String
-    let title: String
-
-    var body: some View {
-        HStack(spacing: 7) {
-            Image(systemName: icon).font(.system(size: 11, weight: .semibold))
-            Text(title)
-                .font(.system(size: 12, weight: .medium))
-                .lineLimit(1)
-                .frame(maxWidth: 122, alignment: .leading)
-            Image(systemName: "chevron.down").font(.system(size: 8, weight: .bold))
-        }
-        .foregroundStyle(AppTheme.textPrimary)
-    }
-}
-
-private struct EmptyTaskView: View {
-    let isOffline: Bool
-    let projectName: String?
-    let projectCount: Int
-
-    var body: some View {
-        VStack(spacing: 18) {
-            ZStack {
-                Circle()
-                    .fill(AppTheme.surfaceMuted)
-                    .frame(width: 54, height: 54)
-                Image(systemName: isOffline ? "wifi.slash" : "hexagon")
-                    .font(.system(size: 23, weight: .medium))
-                    .foregroundStyle(AppTheme.textPrimary)
-            }
-
-            VStack(spacing: 7) {
-                Text(isOffline ? "Mac is offline" : (projectName == nil ? "Choose a project" : "Start a task"))
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
-                Text(detail)
-                    .font(.system(size: 14))
-                    .foregroundStyle(AppTheme.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private var detail: String {
-        if isOffline { return "Codex Remote will reconnect automatically." }
-        if let projectName { return "Codex will work in \(projectName) on your Mac." }
-        return projectCount == 0 ? "No Git projects were found in the configured workspace roots." : "Select one of \(projectCount) available projects."
-    }
-}
-
-private struct WorkspaceHeader: View {
-    let agentName: String
-    let projectName: String
-    let connection: ConnectionState
-    let agent: AgentState
-
-    var body: some View {
-        HStack(spacing: 11) {
-            Image(systemName: "desktopcomputer")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(AppTheme.textSecondary)
-                .frame(width: 30, height: 30)
-                .background(AppTheme.surfaceMuted)
-                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(projectName)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
-                Text(agentName)
-                    .font(.system(size: 12))
-                    .foregroundStyle(AppTheme.textSecondary)
-            }
-
-            Spacer()
-
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(statusColor)
-                    .frame(width: 7, height: 7)
-                Text(statusText)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(AppTheme.textSecondary)
-            }
-        }
-        .padding(.bottom, 6)
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(AppTheme.border).frame(height: 1)
+            .accessibilityLabel("Refresh projects")
+        case .settings:
+            EmptyView()
         }
     }
 
-    private var statusColor: Color {
-        connection == .disconnected || agent == .offline ? AppTheme.red : (agent == .running ? AppTheme.amber : AppTheme.green)
+    private func resolvedProject(_ projectID: String?) -> ProjectSummary? {
+        if let projectID, let project = viewModel.projects.first(where: { $0.id == projectID }) {
+            return project
+        }
+        return viewModel.selectedProject ?? viewModel.projects.first
     }
 
-    private var statusText: String {
-        connection == .disconnected || agent == .offline ? "Offline" : (agent == .running ? "Working" : "Online")
-    }
-}
-
-private struct CodexHeading: View {
-    let phase: TurnPhase
-    let startedAt: Date?
-
-    var body: some View {
-        HStack(spacing: 9) {
-            Image(systemName: "hexagon.fill")
-                .font(.system(size: 18))
-                .foregroundStyle(AppTheme.textPrimary)
-            Text("Codex")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(AppTheme.textPrimary)
-
-            if phase == .running, let startedAt {
-                TimelineView(.periodic(from: .now, by: 1)) { context in
-                    Text(elapsedString(from: startedAt, to: context.date))
-                        .font(.system(size: 12, design: .monospaced))
-                        .foregroundStyle(AppTheme.textSecondary)
-                        .contentTransition(.numericText())
-                }
-            }
+    private func toggleProjectManager() {
+        isComposerFocused = false
+        if isDrawerOpen {
+            closeProjectManager()
+        } else {
+            openProjectManager()
         }
     }
 
-    private func elapsedString(from start: Date, to end: Date) -> String {
-        let elapsed = max(0, Int(end.timeIntervalSince(start)))
-        return String(format: "%d:%02d", elapsed / 60, elapsed % 60)
-    }
-}
-
-private struct TurnResultView: View {
-    let phase: TurnPhase
-    let result: TurnResult
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(color)
-                Text(result.title)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
-            }
-
-            Text(result.detail)
-                .font(.system(size: 14))
-                .foregroundStyle(AppTheme.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            HStack(spacing: 14) {
-                Label("\(result.changedFiles) files", systemImage: "doc.on.doc")
-                Label("\(Int(result.duration))s", systemImage: "clock")
-            }
-            .font(.system(size: 12))
-            .foregroundStyle(AppTheme.textSecondary)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AppTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(AppTheme.border, lineWidth: 1)
+    private func openProjectManager() {
+        withAnimation(.snappy(duration: 0.32, extraBounce: 0.04)) {
+            isDrawerOpen = true
         }
     }
 
-    private var color: Color {
-        switch phase {
-        case .completed: AppTheme.green
-        case .failed: AppTheme.red
-        case .interrupted: AppTheme.amber
-        default: AppTheme.blue
+    private func closeProjectManager() {
+        withAnimation(.snappy(duration: 0.25)) {
+            isDrawerOpen = false
         }
     }
 
-    private var icon: String {
-        switch phase {
-        case .completed: "checkmark.circle.fill"
-        case .failed: "xmark.circle.fill"
-        case .interrupted: "stop.circle.fill"
-        default: "circle"
-        }
+    private func focusThread(project: ProjectSummary, thread: ThreadSummary) {
+        isComposerFocused = false
+        viewModel.prepareThread(projectID: project.id, threadID: thread.id)
+        screen = .task(projectID: project.id, threadID: thread.id)
+        closeProjectManager()
+    }
+
+    private func focusNewTask(project: ProjectSummary) {
+        isComposerFocused = false
+        viewModel.prepareNewTask(projectID: project.id)
+        screen = .task(projectID: project.id, threadID: nil)
+        closeProjectManager()
+    }
+
+    private var activeWindowSafeAreaInsets: UIEdgeInsets {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        return scenes
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow)?
+            .safeAreaInsets ?? .zero
     }
 }

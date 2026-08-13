@@ -1,32 +1,18 @@
 # Changelog
 
-AI Coding Remote iPhone App 的重要变更记录在此文件中。
+## Unreleased
 
-格式参考 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)。正式发布后遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
+`0.x` 版本仍处于快速迭代阶段。后续变更按实际影响决定是否兼容，并在本文件中明确记录；`0.0.1` 不构成兼容性冻结。
 
-> Release status: **Unreleased**
->
-> 首个生产 GitHub Release 发布前不承诺向后兼容。预发布阶段的破坏性变更会直接移除旧实现，并记录在 `Changed` 或 `Removed`。
+## 0.0.1 - 2026-08-13
 
-## [Unreleased]
-
-### Added
-
-- 提供 SwiftUI 单页远程控制台和 Relay URL 本地设置。
-- 支持多个 Project、Codex Thread、新会话和继续会话。
-- 支持启动和中断 Turn，实时展示 assistant、stdout、stderr 与完成结果。
-- 提供空闲、运行、完成、失败和离线 Mock 场景。
-
-### Changed
-
-- App 协议升级为 `spec_version: "2.0"`，使用 Project、Thread、Turn 界面模型。
-- WebSocket 发送统一使用文本帧承载 JSON。
-
-### Removed
-
-- 删除 `spec_version: "1.0"` 的 `run.*` 客户端模型和界面状态。
-
-### Fixed
-
-- 修正 Relay 对文本帧的协议要求，避免发送二进制 JSON 帧。
-- 修正 RFC 3339 时间解析和局域网权限配置。
+- 建立 Project、Thread、Turn 工作台和 Relay `spec_version: "2.0"` 客户端。
+- 支持历史会话、流式输出、中断、执行权限档位与连接设置。
+- 提供 Simulator 和 iPhone 部署、验证脚本。
+- 工作区按职责拆分，高频 Turn 状态由 `TurnSessionStore` 独立管理并限制内存占用。
+- Relay 事件队列改为有界缓冲，复用 RFC3339 日期解析器，并加入不记录正文的内存水位、队列丢弃与语音时长诊断。
+- 收到系统内存警告时释放可重建的历史缓存和控制台输出；旧版 Speech 听写在 55 秒自动结束。
+- 建立 Apple Unified Logging、有限容量 JSONL、MetricKit、关联 ID、诊断导出及自动摘要组成的统一诊断体系。
+- 文档固化开发与线上共用持久批量上传逻辑、开发环境额外 CoreDevice 拉取，以及未来 SLS SDK + STS 的诊断边界；自动上传仍未实现。
+- Composer 使用本地草稿、原生键盘收起行为和系统背景圆角过渡。
+- 左侧项目列表展开下方项目时自动滚动聚焦，并立即显示该项目的会话。

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Run and Maintain Codex Remote"
+  short_description: "部署真机并维护 Relay、Mac Agent 与 Codex 运行链路"
+  default_prompt: "Use $run-codex-remote-on-iphone to deploy Codex Remote to my iPhone, verify its local runtime, and update maintenance guidance when needed."

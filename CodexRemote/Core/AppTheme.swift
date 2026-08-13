@@ -2,6 +2,7 @@ import SwiftUI
 
 enum AppTheme {
     static let background = Color(red: 0.975, green: 0.973, blue: 0.965)
+    static let keyboardBackdrop = Color(red: 0.957, green: 0.957, blue: 0.957)
     static let surface = Color.white
     static let surfaceMuted = Color(red: 0.945, green: 0.942, blue: 0.93)
     static let hover = Color(red: 0.92, green: 0.918, blue: 0.905)
@@ -13,18 +14,4 @@ enum AppTheme {
     static let amber = Color(red: 0.78, green: 0.48, blue: 0.08)
     static let red = Color(red: 0.78, green: 0.22, blue: 0.19)
     static let blue = Color(red: 0.20, green: 0.39, blue: 0.74)
-
-    static let sectionRadius: CGFloat = 8
-}
-
-extension View {
-    func consolePanel() -> some View {
-        self
-            .background(AppTheme.surface)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.sectionRadius, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: AppTheme.sectionRadius, style: .continuous)
-                    .stroke(AppTheme.border, lineWidth: 1)
-            }
-    }
 }
