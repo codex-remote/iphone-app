@@ -4,6 +4,8 @@
 
 `0.x` 版本仍处于快速迭代阶段。后续变更按实际影响决定是否兼容，并在本文件中明确记录；`0.0.1` 不构成兼容性冻结。
 
+- 采用 Apache License 2.0，并移除仓库中的个人签名 Team ID、Bundle ID 和示例路径。
+
 ## 0.0.1 - 2026-08-13
 
 - 建立 Project、Thread、Turn 工作台和 Relay `spec_version: "2.0"` 客户端。

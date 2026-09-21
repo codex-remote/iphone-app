@@ -1,6 +1,8 @@
-# AI Coding Remote - iPhone App
+# Codex Remote - iPhone App
 
 SwiftUI 移动控制台。App 通过 WebSocket 连接 Relay，列出 Mac 上的多个 Git 项目与 Codex 历史会话，在新会话或已有会话中启动 Turn，并实时展示输出和结果。
+
+> Codex Remote 是独立开源项目，与 OpenAI 没有关联或背书关系。
 
 开发与 UI 实现遵循 [AGENTS.md](AGENTS.md) 中的项目规范，其中 Apple 官方 API、Human Interface Guidelines 和原生交互方案具有最高优先级。工作区的状态边界、文件职责和扩展规则见 [架构文档](docs/architecture.md)。
 
@@ -40,7 +42,7 @@ OOM/Jetsam 发生时不能依赖 App 终止回调完成上传。定位需要组�
 
 真机无法使用 Mac 的回环地址，并且必须与 Mac 位于可互通的可信局域网。真机运行脚本默认复用已经连接的 iPhone profile Relay 与 Mac Agent，提取 Mac 当前局域网地址，并写入 App 的 iPhone 连接配置。
 
-Xcode 已配置好签名、真机完成配对且 iPhone profile 已运行后，可以一条命令完成 Debug 构建、覆盖安装、连接配置和启动：
+首次真机运行时，请在 Xcode 的 Signing & Capabilities 中选择自己的开发团队，并将 `org.codexremote.app` 改为自己拥有的唯一 Bundle ID；仓库不会提交个人 Team ID。诊断脚本可通过 `CODEX_REMOTE_BUNDLE_ID` 使用相同 Bundle ID。完成签名配置、真机配对并启动 iPhone profile 后，可以一条命令完成 Debug 构建、覆盖安装、连接配置和启动：
 
 ```bash
 ./scripts/run-device.sh
@@ -49,7 +51,7 @@ Xcode 已配置好签名、真机完成配对且 iPhone profile 已运行后，�
 只有一台已配对 iPhone 时脚本会自动选择。连接多台设备时按名称或设备 ID 指定：
 
 ```bash
-./scripts/run-device.sh --device "LeeHoo i14P"
+./scripts/run-device.sh --device "Developer iPhone"
 ```
 
 脚本使用 Apple 官方的 `xcodebuild` 和 `devicectl`，效果相当于不附加 LLDB 调试器的 Xcode `Cmd + R`。App 启动后脚本还会通过 Relay `/status` 确认真机建立了新的连接。仅构建并安装、不自动打开 App 时传入 `--no-launch`。
@@ -133,3 +135,9 @@ CodexRemote/
     ├── RelayWireTypes.swift
     └── MockRelayService.swift
 ```
+
+## 开源许可
+
+本仓库采用 [Apache License 2.0](LICENSE)。贡献前请阅读组织级
+[贡献指南](https://github.com/codex-remote/.github/blob/main/CONTRIBUTING.md)；
+版权与项目名称说明见 [NOTICE](NOTICE)。

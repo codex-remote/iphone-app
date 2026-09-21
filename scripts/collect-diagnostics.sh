@@ -9,7 +9,7 @@ fi
 
 device_id="$1"
 output_directory="$2"
-bundle_id="com.leehooo.codexremote.dev925r8v9794"
+bundle_id="${CODEX_REMOTE_BUNDLE_ID:-org.codexremote.app}"
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 capture_directory="${output_directory}/codexremote-diagnostics-${timestamp}"
 

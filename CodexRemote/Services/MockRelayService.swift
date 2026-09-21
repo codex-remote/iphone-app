@@ -26,14 +26,14 @@ final class MockRelayService: RelayServiceProtocol {
     ]
 
     private let sampleProjects = [
-        ProjectSummary(id: "project_codexremote", name: "codexremote", path: "/Users/leehooo/work/selftools/codexremote", threadCount: 8, updatedAt: Date()),
-        ProjectSummary(id: "project_orders", name: "orders-api", path: "/Users/leehooo/work/orders-api", threadCount: 2, updatedAt: Date().addingTimeInterval(-3_600)),
-        ProjectSummary(id: "project_storefront", name: "storefront", path: "/Users/leehooo/work/storefront", threadCount: 1, updatedAt: Date().addingTimeInterval(-8_000)),
-        ProjectSummary(id: "project_design_system", name: "design-system", path: "/Users/leehooo/work/design-system", threadCount: 3, updatedAt: Date().addingTimeInterval(-14_400)),
-        ProjectSummary(id: "project_mobile_agent", name: "mobile-agent", path: "/Users/leehooo/work/mobile-agent", threadCount: 5, updatedAt: Date().addingTimeInterval(-21_600)),
-        ProjectSummary(id: "project_relay_server", name: "relay-server", path: "/Users/leehooo/work/relay-server", threadCount: 4, updatedAt: Date().addingTimeInterval(-32_000)),
-        ProjectSummary(id: "project_docs", name: "docs", path: "/Users/leehooo/work/docs", threadCount: 2, updatedAt: Date().addingTimeInterval(-44_000)),
-        ProjectSummary(id: "project_lab", name: "experiments-lab", path: "/Users/leehooo/work/experiments-lab", threadCount: 6, updatedAt: Date().addingTimeInterval(-62_000))
+        ProjectSummary(id: "project_codexremote", name: "codexremote", path: "/Users/developer/work/codexremote", threadCount: 8, updatedAt: Date()),
+        ProjectSummary(id: "project_orders", name: "orders-api", path: "/Users/developer/work/orders-api", threadCount: 2, updatedAt: Date().addingTimeInterval(-3_600)),
+        ProjectSummary(id: "project_storefront", name: "storefront", path: "/Users/developer/work/storefront", threadCount: 1, updatedAt: Date().addingTimeInterval(-8_000)),
+        ProjectSummary(id: "project_design_system", name: "design-system", path: "/Users/developer/work/design-system", threadCount: 3, updatedAt: Date().addingTimeInterval(-14_400)),
+        ProjectSummary(id: "project_mobile_agent", name: "mobile-agent", path: "/Users/developer/work/mobile-agent", threadCount: 5, updatedAt: Date().addingTimeInterval(-21_600)),
+        ProjectSummary(id: "project_relay_server", name: "relay-server", path: "/Users/developer/work/relay-server", threadCount: 4, updatedAt: Date().addingTimeInterval(-32_000)),
+        ProjectSummary(id: "project_docs", name: "docs", path: "/Users/developer/work/docs", threadCount: 2, updatedAt: Date().addingTimeInterval(-44_000)),
+        ProjectSummary(id: "project_lab", name: "experiments-lab", path: "/Users/developer/work/experiments-lab", threadCount: 6, updatedAt: Date().addingTimeInterval(-62_000))
     ]
 
     var bootstrapState: RelayBootstrapState? {
@@ -133,7 +133,7 @@ final class MockRelayService: RelayServiceProtocol {
         let items = [
             ThreadHistoryItem(id: "item-user", type: "userMessage", role: "user", phase: nil, status: nil, text: "Review the reconnect behavior.", name: nil, command: nil, cwd: nil, output: nil, path: nil, query: nil, exitCode: nil, durationMS: nil, changes: nil, truncated: false),
             ThreadHistoryItem(id: "item-reasoning", type: "reasoning", role: "assistant", phase: nil, status: nil, text: "Checked the reconnect state machine and found a stale transition.", name: nil, command: nil, cwd: nil, output: nil, path: nil, query: nil, exitCode: nil, durationMS: nil, changes: nil, truncated: false),
-            ThreadHistoryItem(id: "item-tool", type: "commandExecution", role: nil, phase: nil, status: "completed", text: nil, name: nil, command: "xcodebuild build", cwd: "/Users/leehooo/work/selftools/codexremote/iphone-app", output: "Build succeeded.", path: nil, query: nil, exitCode: 0, durationMS: 12_000, changes: nil, truncated: false),
+            ThreadHistoryItem(id: "item-tool", type: "commandExecution", role: nil, phase: nil, status: "completed", text: nil, name: nil, command: "xcodebuild build", cwd: "/Users/developer/work/codexremote/iphone-app", output: "Build succeeded.", path: nil, query: nil, exitCode: 0, durationMS: 12_000, changes: nil, truncated: false),
             ThreadHistoryItem(id: "item-agent", type: "agentMessage", role: "assistant", phase: "final_answer", status: nil, text: "The reconnect transition is corrected and tests pass.", name: nil, command: nil, cwd: nil, output: nil, path: nil, query: nil, exitCode: nil, durationMS: nil, changes: nil, truncated: false)
         ]
         let turn = ThreadHistoryTurn(id: "turn-demo", status: "completed", startedAt: now.addingTimeInterval(-30), completedAt: now, durationMS: 30_000, error: nil, items: items, truncated: false)

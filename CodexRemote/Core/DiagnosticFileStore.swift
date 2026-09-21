@@ -14,7 +14,7 @@ final class DiagnosticFileStore: @unchecked Sendable {
 
     private let fileManager: FileManager
     private let directory: URL
-    private let queue = DispatchQueue(label: "com.leehooo.codexremote.diagnostics.store", qos: .utility)
+    private let queue = DispatchQueue(label: "org.codexremote.diagnostics.store", qos: .utility)
     private let eventFileBytes: Int
     private let eventFileLimit: Int
 
