@@ -7,6 +7,7 @@ struct DeviceConcentricSurface: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
+        #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             let shape = ConcentricRectangle(
                 corners: .concentric(minimum: .fixed(fallbackRadius)),
@@ -25,6 +26,14 @@ struct DeviceConcentricSurface: ViewModifier {
                     shape.stroke(Color.black.opacity(borderOpacity), lineWidth: 0.75)
                 }
         }
+        #else
+        let shape = RoundedRectangle(cornerRadius: fallbackRadius, style: .continuous)
+        content
+            .clipShape(shape)
+            .overlay {
+                shape.stroke(Color.black.opacity(borderOpacity), lineWidth: 0.75)
+            }
+        #endif
     }
 }
 
