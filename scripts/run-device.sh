@@ -4,34 +4,31 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-MAC_AGENT_DEV="$APP_DIR/../mac-agent/dev"
 PROJECT_PATH="$APP_DIR/CodexRemote.xcodeproj"
 SCHEME="CodexRemote"
 CONFIGURATION="Debug"
 DERIVED_DATA_PATH="${CODEX_REMOTE_DERIVED_DATA_PATH:-$APP_DIR/.build/DeviceDerivedData}"
 DEVICE_SELECTOR=""
-RELAY_URL=""
+RUNTIME_URL=""
 RESTART_STACK=0
-DEFER_REFRESH=0
 SHOULD_LAUNCH=1
-LOCAL_RELAY_PORT="${CODEX_REMOTE_IPHONE_RELAY_PORT:-18768}"
+LOCAL_GATEWAY_PORT="${CODEX_REMOTE_RUNTIME_GATEWAY_PORT:-18874}"
+LOCAL_RUN_SERVER_PORT="${CODEX_REMOTE_RUN_SERVER_PORT:-18875}"
 
 usage() {
   cat <<'EOF'
 Build, install, configure, and launch Codex Remote on a paired physical iPhone.
-The existing iPhone Relay and Mac Agent are reused by default.
+The existing Runtime Gateway, Run Server, and Mac Agent are reused by default.
 
 Usage:
-  ./scripts/run-device.sh [--device <name-or-id>] [--relay-url <url>]
-                          [--restart-stack] [--defer] [--no-launch]
+  ./scripts/run-device.sh [--device <name-or-id>] [--runtime-url <url>]
+                          [--restart-stack] [--no-launch]
 
 Options:
   --device <name-or-id>  Select a device by name, CoreDevice identifier, or UDID.
-  --relay-url <url>       Use an existing ws:// or wss:// Relay /ws/app endpoint.
-  --restart-stack        Explicitly restart the local iPhone Relay and Mac Agent.
-                          This is rejected when called from that Agent itself.
-  --defer                Build and preflight now, then install and launch only after
-                          the iPhone acknowledges the current Turn's completion.
+  --runtime-url <url>     Use an existing http:// or https:// Runtime Gateway.
+  --restart-stack        Rebuild and restart the source Runtime through devrun crweb.
+                          This is rejected when called from the matching Agent itself.
   --no-launch            Install the app without launching it.
   -h, --help             Show this help.
 EOF
@@ -66,28 +63,6 @@ status_field() {
     || true
 }
 
-write_one_shot_job_plist() {
-  local plist_path="$1"
-  local job_label="$2"
-  local log_path="$3"
-  shift 3
-
-  plutil -create xml1 "$plist_path"
-  plutil -insert Label -string "$job_label" "$plist_path"
-  plutil -insert ProgramArguments -array "$plist_path"
-
-  local argument_index=0
-  local argument
-  for argument in "$@"; do
-    plutil -insert "ProgramArguments.$argument_index" -string "$argument" "$plist_path"
-    argument_index=$((argument_index + 1))
-  done
-
-  plutil -insert ProcessType -string Background "$plist_path"
-  plutil -insert StandardOutPath -string "$log_path" "$plist_path"
-  plutil -insert StandardErrorPath -string "$log_path" "$plist_path"
-}
-
 running_inside_iphone_agent() {
   case "${CODEX_REMOTE_EXECUTION_ORIGIN:-auto}" in
     iphone-agent) return 0 ;;
@@ -104,7 +79,7 @@ running_inside_iphone_agent() {
   local parent_pid
   while [[ "$candidate_pid" =~ ^[0-9]+$ && "$candidate_pid" -gt 1 ]]; do
     command="$(ps -p "$candidate_pid" -o command= 2>/dev/null || true)"
-    if [[ "$command" == *"mac-agent serve"* && "$command" == *":$LOCAL_RELAY_PORT/ws/agent"* ]]; then
+    if [[ "$command" == *"mac-agent serve"* && "$command" == *":$LOCAL_RUN_SERVER_PORT/ws/agent"* ]]; then
       return 0
     fi
     parent_pid="$(ps -p "$candidate_pid" -o ppid= 2>/dev/null | tr -d '[:space:]')"
@@ -121,17 +96,13 @@ while [[ $# -gt 0 ]]; do
       DEVICE_SELECTOR="$2"
       shift 2
       ;;
-    --relay-url)
-      [[ $# -ge 2 ]] || { echo "error: --relay-url requires a value" >&2; exit 2; }
-      RELAY_URL="$2"
+    --runtime-url)
+      [[ $# -ge 2 ]] || { echo "error: $1 requires a value" >&2; exit 2; }
+      RUNTIME_URL="$2"
       shift 2
       ;;
     --restart-stack)
       RESTART_STACK=1
-      shift
-      ;;
-    --defer)
-      DEFER_REFRESH=1
       shift
       ;;
     --no-launch)
@@ -150,23 +121,18 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ "$RESTART_STACK" -eq 1 && -n "$RELAY_URL" ]]; then
-  echo "error: --restart-stack and --relay-url are mutually exclusive" >&2
-  exit 2
-fi
-if [[ "$DEFER_REFRESH" -eq 1 && "$SHOULD_LAUNCH" -eq 0 ]]; then
-  echo "error: --defer cannot be combined with --no-launch" >&2
+if [[ "$RESTART_STACK" -eq 1 && -n "$RUNTIME_URL" ]]; then
+  echo "error: --restart-stack and --runtime-url are mutually exclusive" >&2
   exit 2
 fi
 
 INSIDE_IPHONE_AGENT=0
 if running_inside_iphone_agent; then
   INSIDE_IPHONE_AGENT=1
-  DEFER_REFRESH=1
 fi
-if [[ "$INSIDE_IPHONE_AGENT" -eq 1 && "$RESTART_STACK" -eq 1 ]]; then
-  echo "error: refusing to restart the iPhone Mac Agent from a Turn hosted by that Agent" >&2
-  echo "Run this command from Codex Desktop or Terminal when a full stack restart is required." >&2
+if [[ "$INSIDE_IPHONE_AGENT" -eq 1 ]]; then
+  echo "error: refusing to replace the iPhone client or Runtime from a Turn hosted by the matching Agent" >&2
+  echo "Finish this Turn, then run the command from Codex Desktop or Terminal." >&2
   exit 1
 fi
 
@@ -176,59 +142,40 @@ for command_name in curl plutil xcodebuild xcrun; do
     exit 1
   fi
 done
-if [[ "$DEFER_REFRESH" -eq 1 ]] && ! command -v launchctl >/dev/null 2>&1; then
-  echo "error: launchctl is required for a deferred device refresh" >&2
-  exit 1
-fi
-
 DEVICES_JSON="$(mktemp /tmp/codexremote-devices.XXXXXX.json)"
-STACK_OUTPUT="$(mktemp /tmp/codexremote-stack.XXXXXX.log)"
-trap 'rm -f "$DEVICES_JSON" "$STACK_OUTPUT"' EXIT
+trap 'rm -f "$DEVICES_JSON"' EXIT
 
 if [[ "$RESTART_STACK" -eq 1 ]]; then
-  if [[ ! -x "$MAC_AGENT_DEV" ]]; then
-    echo "error: Mac Agent development script is missing or not executable: $MAC_AGENT_DEV" >&2
+  if ! command -v devrun >/dev/null 2>&1; then
+    echo "error: devrun is required for --restart-stack" >&2
     exit 1
   fi
-  echo "==> Restarting the iPhone Relay and Mac Agent stack"
-  "$MAC_AGENT_DEV" iphone | tee "$STACK_OUTPUT"
-  RELAY_URL="$(awk '/^LAN App WS:[[:space:]]*/ { print $NF; exit }' "$STACK_OUTPUT")"
-elif [[ -z "$RELAY_URL" ]]; then
-  LOCAL_STATUS_URL="http://127.0.0.1:$LOCAL_RELAY_PORT/status"
-  if [[ "$(status_field "$LOCAL_STATUS_URL" agent_connected)" != "true" ]]; then
-    echo "error: the local iPhone Mac Agent is not connected at $LOCAL_STATUS_URL" >&2
-    echo "Start it externally with: ./scripts/run-device.sh --restart-stack" >&2
-    exit 1
-  fi
+  echo "==> Rebuilding and restarting the source Runtime stack"
+  devrun crweb
+fi
+
+if [[ -z "$RUNTIME_URL" ]]; then
   LAN_IPV4="$(resolve_lan_ipv4 || true)"
   if [[ -z "$LAN_IPV4" ]]; then
     echo "error: no active LAN IPv4 address is available" >&2
     exit 1
   fi
-  RELAY_URL="ws://$LAN_IPV4:$LOCAL_RELAY_PORT/ws/app"
-  echo "==> Reusing the running iPhone Relay and Mac Agent"
+  RUNTIME_URL="http://$LAN_IPV4:$LOCAL_GATEWAY_PORT"
+  echo "==> Using the source Runtime Gateway"
 else
-  echo "==> Using the provided Relay without restarting local services"
+  echo "==> Using the provided Runtime Gateway"
 fi
 
-if [[ ! "$RELAY_URL" =~ ^wss?://[^/@]+/ws/app$ ]]; then
-  echo "error: Relay URL must be an unauthenticated ws:// or wss:// URL ending in /ws/app" >&2
+if [[ ! "$RUNTIME_URL" =~ ^https?://[^/@]+/?$ ]]; then
+  echo "error: Runtime URL must be an http:// or https:// Gateway origin without credentials or a path" >&2
   exit 2
 fi
 
-echo "==> Using Relay URL: $RELAY_URL"
-case "$RELAY_URL" in
-  ws://*) RELAY_STATUS_URL="http://${RELAY_URL#ws://}" ;;
-  wss://*) RELAY_STATUS_URL="https://${RELAY_URL#wss://}" ;;
-esac
-RELAY_STATUS_URL="${RELAY_STATUS_URL%/ws/app}/status"
-
-if [[ "$(status_field "$RELAY_STATUS_URL" agent_connected)" != "true" ]]; then
-  echo "error: the selected Relay has no connected Mac Agent: $RELAY_STATUS_URL" >&2
-  exit 1
-fi
-if [[ "$DEFER_REFRESH" -eq 1 && "$(status_field "$RELAY_STATUS_URL" app_connected)" != "true" ]]; then
-  echo "error: deferred refresh requires the current iPhone App to be connected" >&2
+RUNTIME_URL="${RUNTIME_URL%/}"
+GATEWAY_STATUS_URL="$RUNTIME_URL/gateway/healthz"
+echo "==> Using Runtime URL: $RUNTIME_URL"
+if [[ "$(status_field "$GATEWAY_STATUS_URL" status)" != "ok" ]]; then
+  echo "error: Runtime Gateway is not healthy: $GATEWAY_STATUS_URL" >&2
   exit 1
 fi
 
@@ -293,55 +240,6 @@ if [[ ! -d "$APP_PATH" ]]; then
 fi
 BUNDLE_ID="$(plutil -extract CFBundleIdentifier raw -o - "$APP_PATH/Info.plist")"
 
-if [[ "$DEFER_REFRESH" -eq 1 ]]; then
-  PREVIOUS_TURN_ACK="$(status_field "$RELAY_STATUS_URL" last_turn_acknowledged)"
-  PREVIOUS_APP_CONNECTION_ID="$(status_field "$RELAY_STATUS_URL" app_connection_id)"
-  JOB_ID="$(date +%s)-$$"
-  JOB_LABEL="com.ai-coding-remote.device-refresh.$JOB_ID"
-  RESULT_DIR="${CODEX_REMOTE_REFRESH_RESULT_DIR:-$APP_DIR/.build/device-refresh}"
-  RESULT_FILE="$RESULT_DIR/$JOB_ID.status"
-  LOG_FILE="$RESULT_DIR/$JOB_ID.log"
-  JOB_PLIST="$RESULT_DIR/$JOB_ID.plist"
-  mkdir -p "$RESULT_DIR"
-
-  write_one_shot_job_plist \
-    "$JOB_PLIST" \
-    "$JOB_LABEL" \
-    "$LOG_FILE" \
-    "$SCRIPT_DIR/complete-device-refresh.sh" \
-    --device "$CORE_DEVICE_ID" \
-    --device-name "$DEVICE_NAME" \
-    --app-path "$APP_PATH" \
-    --bundle-id "$BUNDLE_ID" \
-    --relay-url "$RELAY_URL" \
-    --status-url "$RELAY_STATUS_URL" \
-    --previous-turn-ack "$PREVIOUS_TURN_ACK" \
-    --previous-app-connection-id "$PREVIOUS_APP_CONNECTION_ID" \
-    --result-file "$RESULT_FILE" \
-    --job-label "$JOB_LABEL" \
-    --job-plist "$JOB_PLIST"
-
-  LAUNCHD_DOMAIN="gui/$(id -u)"
-  if ! launchctl bootstrap "$LAUNCHD_DOMAIN" "$JOB_PLIST"; then
-    rm -f "$JOB_PLIST"
-    echo "error: failed to load deferred refresh job $JOB_LABEL" >&2
-    exit 1
-  fi
-  if ! launchctl kickstart "$LAUNCHD_DOMAIN/$JOB_LABEL"; then
-    launchctl bootout "$LAUNCHD_DOMAIN/$JOB_LABEL" >/dev/null 2>&1 || true
-    rm -f "$JOB_PLIST"
-    echo "error: failed to start deferred refresh job $JOB_LABEL" >&2
-    exit 1
-  fi
-
-  echo "==> Environment ready; deferred iPhone refresh scheduled"
-  echo "Deferred log: $LOG_FILE"
-  echo "Deferred status: $RESULT_FILE"
-  echo "Complete the current Turn now. Installation starts after the iPhone acknowledges completion."
-  exit 0
-fi
-
-PREVIOUS_APP_CONNECTION_ID="$(status_field "$RELAY_STATUS_URL" app_connection_id)"
 echo "==> Installing $BUNDLE_ID on $DEVICE_NAME"
 xcrun devicectl device install app --device "$CORE_DEVICE_ID" "$APP_PATH"
 
@@ -351,22 +249,7 @@ if [[ "$SHOULD_LAUNCH" -eq 1 ]]; then
     --device "$CORE_DEVICE_ID" \
     --terminate-existing \
     "$BUNDLE_ID" \
-    --relay-url "$RELAY_URL"
-
-  app_connected="false"
-  for ((attempt = 0; attempt < 100; attempt++)); do
-    app_connected="$(status_field "$RELAY_STATUS_URL" app_connected)"
-    app_connection_id="$(status_field "$RELAY_STATUS_URL" app_connection_id)"
-    if [[ "$app_connected" == "true" && ( -z "$PREVIOUS_APP_CONNECTION_ID" || "$app_connection_id" != "$PREVIOUS_APP_CONNECTION_ID" ) ]]; then
-      echo "==> iPhone app connected to Relay"
-      break
-    fi
-    sleep 0.1
-  done
-  if [[ "$app_connected" != "true" || ( -n "$PREVIOUS_APP_CONNECTION_ID" && "$app_connection_id" == "$PREVIOUS_APP_CONNECTION_ID" ) ]]; then
-    echo "error: the app launched but did not establish a new Relay connection within 10 seconds" >&2
-    exit 1
-  fi
+    --runtime-url "$RUNTIME_URL"
 fi
 
 echo "==> Done"

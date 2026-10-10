@@ -6,6 +6,11 @@
 
 - 采用 Apache License 2.0，并移除仓库中的个人签名 Team ID、Bundle ID 和示例路径。
 - 为 Xcode 16.x 增加 `ConcentricRectangle` 的编译期回退，同时在新 SDK 上保留系统同心圆角效果。
+- 将生产客户端从旧 `/ws/app` WebSocket 迁移到 Runtime v1 HTTP、Session SSE 与 Run SSE，并按持久 Cursor 从快照恢复。
+- 新增原生一次性配对、内存 Access Token、Keychain Refresh Rotation、退出撤销和明确配对状态。
+- Session/Run、Bootstrap 历史同步和跨客户端 Run 发现使用与 Mobile Web 相同的版本化 Runtime 合同。
+- 执行权限档位通过 Runtime v1 查询并随 Run 持久提交，迁移后继续支持只读、工作区与完整权限。
+- 真机脚本改用 `devrun crweb` 和 Runtime Gateway，不再依赖旧 WebSocket `turn.acknowledged` 延迟刷新。
 
 ## 0.0.1 - 2026-08-13
 

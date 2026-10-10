@@ -3,14 +3,14 @@
 This document defines the ownership boundaries for Codex Remote's iPhone app.
 Keep feature behavior inside these boundaries when extending the app.
 
-> **Architecture status:** the running app currently uses Relay WebSocket communication and a
-> local diagnostics pipeline. The accepted Admin Platform and SLS upload path is a target boundary
-> until its queue, credentials, ingestion, and physical-device tests land.
+> **Architecture status:** the running app uses authenticated Runtime v1 HTTP, Session/Run SSE,
+> durable cursors, and a local diagnostics pipeline. The accepted Admin Platform and SLS upload
+> path remains a target boundary until its queue, credentials, ingestion, and physical-device tests land.
 
 ## Data Flow
 
 ```text
-RelayServiceProtocol
+RelayServiceProtocol (RuntimeRelayService in production, Mock in UI tests)
         |
         v
 WorkspaceViewModel ----------> project, thread, connection, navigation state
@@ -47,8 +47,19 @@ must never be published through `WorkspaceViewModel.objectWillChange`.
 | `ExecutionAccessView.swift` | Execution-profile warning and capability details |
 | `WorkspaceComponents.swift` | Small, workspace-wide presentational components |
 
-`RelayClient.swift` owns connection lifecycle and event routing. Transport-only
-payloads, errors and JSON date coding live in `Services/RelayWireTypes.swift`.
+`Services/Runtime/RuntimeRelayService.swift` adapts Runtime Project/Session/Run state to the
+workspace boundary. `RuntimeClient` owns authenticated HTTP/SSE, `RuntimeAuthSession` owns
+single-flight rotation, and only the refresh credential is stored in Keychain.
+
+## Runtime Recovery Rules
+
+- PostgreSQL-backed Session and Run snapshots are authoritative; an open SSE connection is not.
+- Session and Run cursors are separate and scoped by Runtime Origin plus resource ID.
+- On selection, foreground recovery, or reconnect, load the snapshot first, advance to its durable
+  boundary, then resume SSE after that cursor.
+- Access Tokens remain in memory. Native Refresh Tokens use the native Auth contract and
+  `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`; they never enter UserDefaults or diagnostics.
+- Runtime URLs, authorization headers, pairing codes, prompts, responses and source paths are not logged.
 
 ## Input And Keyboard Rules
 

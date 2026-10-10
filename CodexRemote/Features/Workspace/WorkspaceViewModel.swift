@@ -34,6 +34,8 @@ final class WorkspaceViewModel: ObservableObject {
     private static let transcriptCacheLimit = 2
 
     @Published var connectionState: ConnectionState = .connecting
+    @Published private(set) var authenticationState: RuntimeAuthenticationState = .authenticated(clientName: "Local test")
+    @Published var pairingInput = ""
     @Published var agentName = "Mac Agent"
     @Published var agentState: AgentState = .offline
     @Published private(set) var executionCapabilities: ExecutionCapabilities?
@@ -50,7 +52,7 @@ final class WorkspaceViewModel: ObservableObject {
     @Published var selectedProjectID: String?
     @Published var selectedThreadID: String?
     @Published var connectionProfile: RelayConnectionProfile
-    @Published var relayURL: String
+    @Published var runtimeURL: String
     @Published var connectionEnabled: Bool {
         didSet {
             guard oldValue != connectionEnabled else { return }
@@ -76,7 +78,7 @@ final class WorkspaceViewModel: ObservableObject {
         let rawSavedProfile = defaults.string(forKey: "relayConnectionProfile")
         let savedProfile = rawSavedProfile.flatMap(RelayConnectionProfile.init(rawValue:)) ?? RelayConnectionProfile.current
         connectionProfile = savedProfile
-        relayURL = defaults.string(forKey: savedProfile.urlDefaultsKey) ?? savedProfile.defaultURL
+        runtimeURL = defaults.string(forKey: savedProfile.urlDefaultsKey) ?? savedProfile.defaultURL
         connectionEnabled = defaults.object(forKey: "relayConnectionEnabled") as? Bool ?? true
         self.service = service
         if let bootstrapState = service.bootstrapState {
@@ -184,6 +186,28 @@ final class WorkspaceViewModel: ObservableObject {
         Task { await service.interruptTurn() }
     }
 
+    func pairDevice() {
+        let input = pairingInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !input.isEmpty else { return }
+        Task {
+            await service.pair(codeOrLink: input)
+            if authenticationState.isAuthenticated { pairingInput = "" }
+        }
+    }
+
+    func signOut() {
+        Task { await service.signOut() }
+    }
+
+    func suspendRuntime() {
+        Task { await service.suspend() }
+    }
+
+    func resumeRuntime() {
+        guard connectionEnabled else { return }
+        Task { await service.resume() }
+    }
+
     func selectProject(_ projectID: String) {
         if projectID != selectedProjectID {
             selectedProjectID = projectID
@@ -214,10 +238,10 @@ final class WorkspaceViewModel: ObservableObject {
     func selectConnectionProfile(_ profile: RelayConnectionProfile) {
         guard profile != connectionProfile else { return }
         let defaults = UserDefaults.standard
-        defaults.set(relayURL, forKey: connectionProfile.urlDefaultsKey)
+        defaults.set(runtimeURL, forKey: connectionProfile.urlDefaultsKey)
         connectionProfile = profile
         defaults.set(profile.rawValue, forKey: "relayConnectionProfile")
-        relayURL = defaults.string(forKey: profile.urlDefaultsKey) ?? profile.defaultURL
+        runtimeURL = defaults.string(forKey: profile.urlDefaultsKey) ?? profile.defaultURL
         disableConnection()
     }
 
@@ -248,7 +272,7 @@ final class WorkspaceViewModel: ObservableObject {
         connectionTestTask?.cancel()
         clearConnectionData()
         connectionTestState = .testing
-        let url = relayURL
+        let url = runtimeURL
         connectionTestTask = Task { @MainActor [weak self] in
             guard let self else { return }
             do {
@@ -325,6 +349,7 @@ final class WorkspaceViewModel: ObservableObject {
         pendingThreadReadKey = nil
         loadedThreadReadKey = nil
         resetTurn()
+        service.selectContext(projectID: projectID, threadID: nil)
     }
 
     func prepareThread(projectID: String, threadID: String) {
@@ -332,6 +357,7 @@ final class WorkspaceViewModel: ObservableObject {
         let key = "\(projectID):\(threadID)"
         selectedThreadID = threadID
         resetTurn()
+        service.selectContext(projectID: projectID, threadID: threadID)
         if threadTranscriptsByKey[key] != nil {
             touchTranscript(key)
             loadedThreadReadKey = key
@@ -344,7 +370,7 @@ final class WorkspaceViewModel: ObservableObject {
     private func saveConnectionSettings() {
         let defaults = UserDefaults.standard
         defaults.set(connectionProfile.rawValue, forKey: "relayConnectionProfile")
-        defaults.set(relayURL, forKey: connectionProfile.urlDefaultsKey)
+        defaults.set(runtimeURL, forKey: connectionProfile.urlDefaultsKey)
     }
 
     private func clearConnectionData() {
@@ -400,6 +426,10 @@ final class WorkspaceViewModel: ObservableObject {
 
     private func apply(_ event: RelayEvent) {
         switch event {
+        case .runtimeOrigin(let value):
+            runtimeURL = value
+        case .authentication(let state):
+            authenticationState = state
         case .connection(let state):
             connectionState = state
             switch state {

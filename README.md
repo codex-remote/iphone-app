@@ -1,6 +1,6 @@
 # Codex Remote - iPhone App
 
-SwiftUI 移动控制台。App 通过 WebSocket 连接 Relay，列出 Mac 上的多个 Git 项目与 Codex 历史会话，在新会话或已有会话中启动 Turn，并实时展示输出和结果。
+SwiftUI 移动控制台。App 通过 Runtime v1 HTTP 与 Session/Run SSE 连接 Mac Runtime，列出项目与持久会话，在新会话或已有会话中启动 Run，并实时展示输出和结果。
 
 > Codex Remote 是独立开源项目，与 OpenAI 没有关联或背书关系。
 
@@ -8,20 +8,20 @@ SwiftUI 移动控制台。App 通过 WebSocket 连接 Relay，列出 Mac 上的�
 
 ## 当前能力
 
-- 真实 `URLSessionWebSocketTask` Relay Client。
-- Relay URL 本地设置和自动重连。
-- Simulator/iPhone 独立连接预设，以及 Relay `/status` 测试和全新重连。
+- 原生 `URLSession` Runtime v1 HTTP/SSE Client，按持久 Cursor 自动恢复。
+- 一次性配对、内存 Access Token、Keychain Refresh Token Rotation、退出和撤销恢复。
+- Simulator/iPhone 独立 Runtime Gateway 连接预设和健康检查。
 - 多 Project 选择与刷新。
-- Project 下的 Codex Thread 列表、新会话和继续会话。
-- 选择历史会话时通过 `thread.read` 加载持久化 Turns，并在 Console 展示消息、命令输出和文件变更。
+- Project 下的持久 Session 列表、新会话和继续会话。
+- 通过 Session/Run 快照加载历史，并在 Console 展示消息、命令输出和文件变更。
 - Prompt、执行、中断、assistant/stdout/stderr Console。
-- 完成、失败、中断结果和最近日志恢复。
+- 完成、失败、中断结果、Bootstrap 历史同步和前后台 Cursor 恢复。
 - 在任务提交前显示 Mac Agent 的受限执行状态，并提供沙箱、授权策略和不可用宿主能力详情。
 - 按项目读取 App Server 允许的执行档位，在原生菜单中选择只读、工作区或完整权限，并把选择同时应用于 Codex Thread 和 Turn。
 - 使用 Apple Unified Logging、有限容量 JSONL、MetricKit 和诊断导出保存可脱敏的本地证据。
 - 本地 Mock Relay 用于 UI 自动化和离线开发验证。
 
-当前运行模型是单用户、单 Mac、全局单 Turn。
+当前运行模型是单 Owner、单 Mac；iPhone 与 Mobile Web 可同时打开同一个 Session，并通过 Session SSE 发现彼此创建的 Run。
 
 当前版本为 **0.0.1**，是首个最小可用快照。`0.x` 阶段继续快速迭代，后续变更按实际影响决定是否兼容，并在 [CHANGELOG.md](CHANGELOG.md) 中记录；此版本不代表兼容性冻结。
 
@@ -35,12 +35,12 @@ OOM/Jetsam 发生时不能依赖 App 终止回调完成上传。定位需要组�
 
 ## 运行
 
-1. 在 `mac-agent` 仓库执行 `./dev simulator`，启动 Simulator 专用的 Relay 与 Mac Agent。
+1. 从外部 Terminal 或 Codex Desktop 执行 `devrun crweb`，启动 source Runtime Gateway、Run Server 与 Mac Agent。
 2. 使用 Xcode 打开 `CodexRemote.xcodeproj`。
 3. 选择 iPhone Simulator 或真机，运行 `CodexRemote` Scheme。
-4. iPhone Simulator 默认连接 `ws://127.0.0.1:18767/ws/app`。
+4. iPhone Simulator 默认连接 `http://127.0.0.1:18874`。
 
-真机无法使用 Mac 的回环地址，并且必须与 Mac 位于可互通的可信局域网。真机运行脚本默认复用已经连接的 iPhone profile Relay 与 Mac Agent，提取 Mac 当前局域网地址，并写入 App 的 iPhone 连接配置。
+真机无法使用 Mac 的回环地址，并且必须与 Mac 位于可互通的可信局域网。真机运行脚本默认复用 source Runtime，提取 Mac 当前局域网地址，并写入 App 的 Runtime Gateway 配置。首次打开后，粘贴 `codex-remote pair` 或 `devrun crpair` 输出的一次性链接完成配对。
 
 首次真机运行时，请在 Xcode 的 Signing & Capabilities 中选择自己的开发团队，并将 `org.codexremote.app` 改为自己拥有的唯一 Bundle ID；仓库不会提交个人 Team ID。诊断脚本可通过 `CODEX_REMOTE_BUNDLE_ID` 使用相同 Bundle ID。完成签名配置、真机配对并启动 iPhone profile 后，可以一条命令完成 Debug 构建、覆盖安装、连接配置和启动：
 
@@ -56,25 +56,25 @@ OOM/Jetsam 发生时不能依赖 App 终止回调完成上传。定位需要组�
 
 脚本使用 Apple 官方的 `xcodebuild` 和 `devicectl`，效果相当于不附加 LLDB 调试器的 Xcode `Cmd + R`。App 启动后脚本还会通过 Relay `/status` 确认真机建立了新的连接。仅构建并安装、不自动打开 App 时传入 `--no-launch`。
 
-只有需要更新 Relay 或 Mac Agent 二进制、配置或运行时时，才从 Mac 桌面 Codex 或终端显式重启完整栈：
+只有需要更新 Gateway、Run Server 或 Mac Agent 二进制、配置或运行时时，才从 Mac 桌面 Codex 或终端显式重启完整栈：
 
 ```bash
 ./scripts/run-device.sh --restart-stack
 ```
 
-脚本检测到自己运行在 iPhone Mac Agent 承载的 Turn 中时，会拒绝 `--restart-stack` 并自动采用延迟刷新：先完成设备预检和构建，等待 iPhone 应用 `turn.completed` 并发送 `turn.acknowledged`，再由无 `KeepAlive` 的一次性 `launchd` 任务安装和启动 App；任务结束后会卸载自身，禁止重复覆盖安装。延迟任务状态与日志位于 `.build/device-refresh/`。
+脚本检测到自己运行在匹配 Mac Agent 承载的 Run 中时，会拒绝替换 Runtime 或当前 iPhone App。先完成 Run，再从外部 Terminal 或 Codex Desktop 执行该命令；Runtime v1 不再使用旧 App WebSocket 的 `turn.acknowledged` 作为维护信号。
 
-连接已经运行的非局域网 Relay 时显式传入完整 App WebSocket 地址。此模式不会重启本机 Relay 或 Mac Agent：
+连接已经运行的其他 Runtime Gateway 时显式传入完整 Origin。此模式不会重启本机 Runtime：
 
 ```bash
-./scripts/run-device.sh --relay-url "wss://relay.example.com/ws/app"
+./scripts/run-device.sh --runtime-url "https://runtime.example.com"
 ```
 
-远程 Relay 必须提供同源 `/status`，并由目标环境的 Mac Agent 建立连接。当前协议没有应用层鉴权；不要把无 TLS 的 Relay 直接暴露到公网，远程调试应使用可信私网、VPN，或配有 TLS 与访问控制的入口。
+远程入口必须提供版本化 Gateway、Runtime Auth 与 Runtime v1 契约。当前公网限流、Cursor 过期标准化和容量硬化尚未完成；不要直接把局域网入口暴露到公网。
 
 仓库内提供 `$run-codex-remote-on-iphone` Skill，AI 可根据“真机运行 Codex Remote”“重启局域网调试并更新手机”或“使用指定 Relay 地址部署到 iPhone”等自然语言请求调用上述流程。也可以显式写出 Skill 名称避免歧义。
 
-打开 Settings 中的“连接”开关时，App 会从当前 WebSocket 地址推导同主机同端口的 HTTP `/status`，检查成功后保存该设备 profile 的地址并建立新的 WebSocket；关闭开关会断开当前连接并清除旧项目缓存。Simulator 与 iPhone 的地址分别保存，互不覆盖。
+打开 Settings 中的“连接”开关时，App 会检查 Gateway 健康状态，保存该设备 profile 的 Origin，并通过 Runtime Auth 恢复会话；关闭开关会停止 SSE 并清除工作区内存。Simulator 与 iPhone 的地址分别保存，互不覆盖。
 
 Debug 构建也可从命令行验证：
 
@@ -96,10 +96,10 @@ Apple 平台能力优先采用公开的 Apple 官方 SwiftUI、UIKit 与系统�
 
 ## 协议边界
 
-- 协议：`spec_version: "2.0"`
-- App 入口：`/ws/app`
-- App 发送：`project.list`、`execution.profile.list`、`thread.list`、`thread.read`、`turn.start`、`turn.interrupt`、`turn.acknowledged`
-- App 接收：Agent 状态与执行能力、`execution.profile.snapshot`、Project/Thread Snapshot、`thread.detail`、Turn 事件
+- 协议：Runtime v1 HTTP、Session SSE 与 Run SSE。
+- App 使用一次性 native pairing、短期 Access Token 和 Keychain Refresh Rotation。
+- HTTP 提供 Project、Session、Run、Bootstrap、执行档位和取消；SSE 只承载可按持久 Cursor 恢复的事件。
+- 旧 `/ws/app` 不再属于 iPhone App 运行路径。
 - SwiftUI View 不直接拼装或解析 JSON。
 
 ## 结构
@@ -130,10 +130,9 @@ CodexRemote/
 │       └── VoiceTranscriptionController.swift
 ├── Models/RelayModels.swift
 └── Services/
-    ├── RelayService.swift
-    ├── RelayClient.swift
-    ├── RelayWireTypes.swift
-    └── MockRelayService.swift
+    ├── RelayService.swift          # UI service boundary
+    ├── Runtime/                    # Auth, HTTP/SSE, Cursor and Keychain
+    └── MockRelayService.swift      # UI test only
 ```
 
 ## 开源许可

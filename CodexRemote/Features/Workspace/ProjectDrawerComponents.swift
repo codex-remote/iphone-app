@@ -161,10 +161,12 @@ struct DrawerProjectRow: View {
                         .lineLimit(1)
                     if isRunning { Circle().fill(AppTheme.amber).frame(width: 6, height: 6) }
                 }
-                Text(verbatim: compactPath(project.path))
-                    .font(.system(size: 10))
-                    .foregroundStyle(AppTheme.textSecondary)
-                    .lineLimit(1)
+                if !project.path.isEmpty {
+                    Text(verbatim: compactPath(project.path))
+                        .font(.system(size: 10))
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .lineLimit(1)
+                }
             }
             Spacer()
             Text(verbatim: "\(project.threadCount)")

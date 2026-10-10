@@ -18,6 +18,20 @@ final class WorkspaceSkeletonUITests: XCTestCase {
         XCTAssertFalse(element("projectManager.drawer", in: app).waitForExistence(timeout: 1))
     }
 
+    func testUnpairedRuntimeShowsNativePairingControls() throws {
+        let app = launchApp(arguments: ["--demo-unpaired"])
+
+        XCTAssertTrue(app.staticTexts["Pair this iPhone"].waitForExistence(timeout: 4))
+        let input = element("auth.pairingInput", in: app)
+        XCTAssertTrue(input.waitForExistence(timeout: 2))
+        XCTAssertTrue(button("auth.pair", in: app).waitForExistence(timeout: 2))
+        XCTAssertFalse(button("auth.pair", in: app).isEnabled)
+
+        input.tap()
+        input.typeText("one-time-code")
+        XCTAssertTrue(button("auth.pair", in: app).isEnabled)
+    }
+
     func testProjectManagerShowsLoadingUntilProjectsArrive() throws {
         let app = launchApp(arguments: ["--demo-drawer", "--demo-project-loading"])
         let loading = element("projectManager.projects.loading", in: app)
@@ -221,32 +235,32 @@ final class WorkspaceSkeletonUITests: XCTestCase {
         XCTAssertLessThan(lowerProject.frame.minY, app.frame.height * 0.55)
     }
 
-    func testConnectionProfilesUseDifferentDefaultPorts() throws {
+    func testConnectionProfilesUseRuntimeGatewayDefault() throws {
         let app = launchApp(arguments: ["--demo-settings", "--reset-connection-settings"])
         let urlField = app.textFields["connection.url"]
         XCTAssertTrue(urlField.waitForExistence(timeout: 4))
-        XCTAssertTrue(stringValue(of: urlField).contains(":18767/"))
+        XCTAssertTrue(stringValue(of: urlField).contains(":18874"))
 
         let profilePicker = app.segmentedControls["connection.profile"]
         XCTAssertTrue(profilePicker.waitForExistence(timeout: 2))
         profilePicker.buttons.element(boundBy: 1).tap()
-        XCTAssertTrue(stringValue(of: urlField).contains(":18768/"))
+        XCTAssertTrue(stringValue(of: urlField).contains(":18874"))
 
         profilePicker.buttons.element(boundBy: 0).tap()
-        XCTAssertTrue(stringValue(of: urlField).contains(":18767/"))
+        XCTAssertTrue(stringValue(of: urlField).contains(":18874"))
     }
 
-    func testRelayURLLaunchArgumentConfiguresIPhoneConnection() throws {
-        let relayURL = "ws://192.0.2.10:18768/ws/app"
+    func testRuntimeURLLaunchArgumentConfiguresIPhoneConnection() throws {
+        let runtimeURL = "http://192.0.2.10:18874"
         let app = launchApp(arguments: [
             "--demo-settings",
             "--reset-connection-settings",
-            "--relay-url", relayURL
+            "--runtime-url", runtimeURL
         ])
 
         let urlField = app.textFields["connection.url"]
         XCTAssertTrue(urlField.waitForExistence(timeout: 4))
-        XCTAssertEqual(stringValue(of: urlField), relayURL)
+        XCTAssertEqual(stringValue(of: urlField), runtimeURL)
 
         let connectionToggle = element("connection.toggle", in: app)
         XCTAssertTrue(connectionToggle.waitForExistence(timeout: 2))

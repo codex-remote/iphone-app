@@ -78,8 +78,8 @@ private enum AppBootstrap {
         let defaults = UserDefaults.standard
         if arguments.contains("--reset-connection-settings") {
             [
-                "relayURL.simulator",
-                "relayURL.iPhone",
+                "runtimeURL.simulator",
+                "runtimeURL.iPhone",
                 "relayConnectionProfile",
                 "relayConnectionEnabled"
             ].forEach { defaults.removeObject(forKey: $0) }
@@ -89,25 +89,24 @@ private enum AppBootstrap {
                 .filter { $0.hasPrefix("executionPermissionProfile.") }
                 .forEach { defaults.removeObject(forKey: $0) }
         }
-        applyRelayURLLaunchArgument(arguments, defaults: defaults)
+        applyRuntimeURLLaunchArgument(arguments, defaults: defaults)
         let service: RelayServiceProtocol = arguments.contains { $0.hasPrefix("--demo-") }
             ? MockRelayService()
-            : RelayClient()
+            : RuntimeRelayService()
         return WorkspaceViewModel(service: service)
     }
 
-    private static func applyRelayURLLaunchArgument(_ arguments: [String], defaults: UserDefaults) {
-        guard let optionIndex = arguments.firstIndex(of: "--relay-url"),
+    private static func applyRuntimeURLLaunchArgument(_ arguments: [String], defaults: UserDefaults) {
+        guard let optionIndex = arguments.firstIndex(of: "--runtime-url"),
               arguments.indices.contains(optionIndex + 1) else { return }
 
         let rawValue = arguments[optionIndex + 1]
         guard let url = URL(string: rawValue),
               let scheme = url.scheme?.lowercased(),
-              ["ws", "wss"].contains(scheme),
+              ["http", "https"].contains(scheme),
               url.host != nil,
               url.user == nil,
               url.password == nil,
-              url.path == "/ws/app",
               url.query == nil,
               url.fragment == nil else { return }
 

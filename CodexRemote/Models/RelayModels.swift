@@ -244,6 +244,8 @@ struct ExecutionProfileSnapshot: Codable, Sendable {
 }
 
 enum RelayEvent: Sendable {
+    case runtimeOrigin(String)
+    case authentication(RuntimeAuthenticationState)
     case connection(ConnectionState)
     case agent(name: String, state: AgentState)
     case capabilities(ExecutionCapabilities?)
@@ -263,86 +265,4 @@ enum RelayEvent: Sendable {
     case output(LogEntry)
     case turnEnded(traceID: String?, turnID: String?, phase: TurnPhase, result: TurnResult?)
     case reset
-}
-
-struct RelayEnvelope<Payload: Codable & Sendable>: Codable, Sendable {
-    let specVersion: String
-    let messageID: String
-    let type: String
-    let occurredAt: Date
-    let traceID: String
-    let sender: RelaySender
-    let payload: Payload
-
-    enum CodingKeys: String, CodingKey {
-        case type, sender, payload
-        case specVersion = "spec_version"
-        case messageID = "message_id"
-        case occurredAt = "occurred_at"
-        case traceID = "trace_id"
-    }
-}
-
-struct RelayEnvelopeHeader: Decodable {
-    let specVersion: String
-    let type: String
-    let traceID: String
-
-    enum CodingKeys: String, CodingKey {
-        case type
-        case specVersion = "spec_version"
-        case traceID = "trace_id"
-    }
-}
-
-struct RelaySender: Codable, Sendable {
-    let kind: String
-    let id: String
-}
-
-struct EmptyPayload: Codable, Sendable {}
-struct ThreadListPayload: Codable, Sendable {
-    let projectID: String
-    enum CodingKeys: String, CodingKey { case projectID = "project_id" }
-}
-struct ExecutionProfileListPayload: Codable, Sendable {
-    let projectID: String
-    enum CodingKeys: String, CodingKey { case projectID = "project_id" }
-}
-struct ThreadReadPayload: Codable, Sendable {
-    let projectID: String
-    let threadID: String
-    enum CodingKeys: String, CodingKey {
-        case projectID = "project_id"
-        case threadID = "thread_id"
-    }
-}
-struct TurnStartPayload: Codable, Sendable {
-    let projectID: String
-    let threadID: String?
-    let prompt: String
-    let permissionProfileID: String?
-    enum CodingKeys: String, CodingKey {
-        case prompt
-        case projectID = "project_id"
-        case threadID = "thread_id"
-        case permissionProfileID = "permission_profile_id"
-    }
-}
-struct TurnInterruptPayload: Codable, Sendable {
-    let threadID: String
-    let turnID: String
-    enum CodingKeys: String, CodingKey {
-        case threadID = "thread_id"
-        case turnID = "turn_id"
-    }
-}
-
-struct TurnAcknowledgedPayload: Codable, Sendable {
-    let turnID: String
-    let status: String
-    enum CodingKeys: String, CodingKey {
-        case status
-        case turnID = "turn_id"
-    }
 }
