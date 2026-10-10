@@ -70,14 +70,14 @@ final class TurnSessionStoreTests: XCTestCase {
         XCTAssertEqual(store.retainedCharacterCount, 24_576 + 7)
     }
 
-    func testRelayDecoderAcceptsFractionalAndWholeSecondDates() throws {
+    func testRuntimeDecoderAcceptsFractionalAndWholeSecondDates() throws {
         struct Payload: Decodable { let date: Date }
 
-        let withFraction = try JSONDecoder.relay.decode(
+        let withFraction = try RuntimeCoding.decoder.decode(
             Payload.self,
             from: Data(#"{"date":"2026-08-12T08:34:43.123Z"}"#.utf8)
         )
-        let withoutFraction = try JSONDecoder.relay.decode(
+        let withoutFraction = try RuntimeCoding.decoder.decode(
             Payload.self,
             from: Data(#"{"date":"2026-08-12T08:34:43Z"}"#.utf8)
         )

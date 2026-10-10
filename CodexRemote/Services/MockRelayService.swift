@@ -37,6 +37,17 @@ final class MockRelayService: RelayServiceProtocol {
     ]
 
     var bootstrapState: RelayBootstrapState? {
+        if ProcessInfo.processInfo.arguments.contains("--demo-unpaired") {
+            return RelayBootstrapState(
+                connectionState: .disconnected,
+                agentName: "Lee's Mac Studio",
+                agentState: .offline,
+                capabilities: nil,
+                projects: [],
+                threads: [],
+                selectedProjectID: nil
+            )
+        }
         if ProcessInfo.processInfo.arguments.contains("--demo-offline") {
             return RelayBootstrapState(
                 connectionState: .disconnected,
@@ -76,6 +87,12 @@ final class MockRelayService: RelayServiceProtocol {
     }
 
     func connect() async {
+        if ProcessInfo.processInfo.arguments.contains("--demo-unpaired") {
+            emit(.authentication(.unauthenticated(message: nil)))
+            emit(.connection(.disconnected))
+            emit(.agent(name: "Lee's Mac Studio", state: .offline))
+            return
+        }
         if ProcessInfo.processInfo.arguments.contains("--demo-offline") {
             emit(.connection(.disconnected))
             emit(.agent(name: "Lee's Mac Studio", state: .offline))

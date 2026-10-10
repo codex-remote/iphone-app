@@ -160,6 +160,12 @@ struct WorkspaceView: View {
         .task {
             await runStartupOverlayTiming()
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
+            viewModel.suspendRuntime()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            viewModel.resumeRuntime()
+        }
         .sheet(isPresented: $isNewSessionPickerPresented) {
             NewSessionProjectPicker(projects: viewModel.projects) { project in
                 isNewSessionPickerPresented = false
@@ -214,6 +220,9 @@ struct WorkspaceView: View {
 
     @ViewBuilder
     private var screenContent: some View {
+        if !viewModel.authenticationState.isAuthenticated, screen != .settings {
+            RuntimePairingView(viewModel: viewModel)
+        } else {
         switch screen {
         case .project(let projectID):
             if let project = resolvedProject(projectID) {
@@ -249,6 +258,7 @@ struct WorkspaceView: View {
         case .settings:
             SettingsView(viewModel: viewModel)
         }
+        }
     }
 
     @ViewBuilder
@@ -279,10 +289,12 @@ struct WorkspaceView: View {
                     Button(action: viewModel.refreshProjects) {
                         Label("Refresh", systemImage: "arrow.clockwise")
                     }
-                    Button {
-                        UIPasteboard.general.string = project.path
-                    } label: {
-                        Label("Copy path", systemImage: "doc.on.doc")
+                    if !project.path.isEmpty {
+                        Button {
+                            UIPasteboard.general.string = project.path
+                        } label: {
+                            Label("Copy path", systemImage: "doc.on.doc")
+                        }
                     }
                 } label: {
                     Image(systemName: "ellipsis")

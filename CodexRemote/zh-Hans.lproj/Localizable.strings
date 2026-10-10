@@ -53,7 +53,6 @@
 "Sessions" = "会话";
 "Settings" = "设置";
 "Simulator" = "模拟器";
-"Simulator uses the Mac loopback address and port 18767." = "模拟器使用 Mac 本机回环地址和 18767 端口。";
 "Start a task" = "开始任务";
 "Start turn" = "开始任务";
 "Status" = "状态";
@@ -63,8 +62,6 @@
 "Updated" = "更新";
 "Version" = "版本";
 "Waiting for Codex to start" = "等待 Codex 开始工作";
-"WebSocket URL" = "WebSocket 地址";
-"Physical iPhone uses port 18768. Replace 127.0.0.1 with this Mac's LAN IP or .local hostname." = "iPhone 真机使用 18768 端口。请将 127.0.0.1 替换为这台 Mac 的局域网 IP 或 .local 主机名。";
 "Working" = "工作中";
 "Workspace" = "工作区";
 "sessions" = "个会话";
@@ -192,3 +189,16 @@
 "Export diagnostics" = "导出诊断包";
 "CodexRemote diagnostics" = "CodexRemote 诊断包";
 "Includes bounded structured events and Apple system diagnostics. Conversation content and credentials are never included." = "包含有容量上限的结构化事件和 Apple 系统诊断；不会包含对话正文或凭据。";
+"Pair this iPhone" = "配对此 iPhone";
+"Pairing link or code" = "配对链接或配对码";
+"Pair device" = "配对设备";
+"Checking this device's access…" = "正在检查此设备的访问权限…";
+"Exchanging the one-time pairing code…" = "正在兑换一次性配对码…";
+"Paste the one-time link printed by codex-remote pair." = "粘贴 codex-remote pair 输出的一次性链接。";
+"This iPhone is paired." = "此 iPhone 已配对。";
+"Authentication" = "身份认证";
+"Device access" = "设备访问";
+"Sign out" = "退出设备";
+"Refresh credentials are stored in this iPhone's Keychain and are never written to diagnostics." = "刷新凭据保存在此 iPhone 的钥匙串中，绝不会写入诊断。";
+"Runtime URL" = "Runtime 地址";
+"Checking Runtime status…" = "正在检查 Runtime 状态…";

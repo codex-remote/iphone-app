@@ -16,6 +16,26 @@ struct SettingsView: View {
             }
 
             Section {
+                LabeledContent("Device access", value: authenticationLabel)
+                    .accessibilityIdentifier("auth.status")
+                if viewModel.authenticationState.isAuthenticated {
+                    Button("Sign out", role: .destructive, action: viewModel.signOut)
+                        .accessibilityIdentifier("auth.signOut")
+                } else {
+                    TextField("Pairing link or code", text: $viewModel.pairingInput, axis: .vertical)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .font(.system(.body, design: .monospaced))
+                    Button("Pair device", action: viewModel.pairDevice)
+                        .disabled(viewModel.pairingInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            } header: {
+                Text("Authentication")
+            } footer: {
+                Text("Refresh credentials are stored in this iPhone's Keychain and are never written to diagnostics.")
+            }
+
+            Section {
                 LabeledContent {
                     HStack(spacing: 6) {
                         Circle()
@@ -44,14 +64,14 @@ struct SettingsView: View {
                 .disabled(viewModel.connectionTestState == .testing)
                 .accessibilityIdentifier("connection.profile")
 
-                TextField("WebSocket URL", text: $viewModel.relayURL)
+                TextField("Runtime URL", text: $viewModel.runtimeURL)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .font(.system(.body, design: .monospaced))
                     .keyboardType(.URL)
                     .accessibilityIdentifier("connection.url")
                     .disabled(viewModel.connectionTestState == .testing)
-                    .onChange(of: viewModel.relayURL) { _, _ in
+                    .onChange(of: viewModel.runtimeURL) { _, _ in
                         viewModel.connectionSettingsDidChange()
                     }
 
@@ -89,7 +109,7 @@ struct SettingsView: View {
             }
 
             Section("About") {
-                LabeledContent("Protocol", value: "2.0")
+                LabeledContent("Protocol", value: "Runtime v1")
                 LabeledContent("Version", value: appVersion)
             }
         }
@@ -103,6 +123,16 @@ struct SettingsView: View {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
     }
 
+    private var authenticationLabel: String {
+        switch viewModel.authenticationState {
+        case .checking: "Checking"
+        case .pairing: "Pairing"
+        case .authenticated(let clientName): clientName
+        case .unauthenticated: "Not paired"
+        case .unavailable: "Unavailable"
+        }
+    }
+
     @ViewBuilder
     private var connectionFeedback: some View {
         switch viewModel.connectionTestState {
@@ -112,7 +142,7 @@ struct SettingsView: View {
             HStack(spacing: 8) {
                 ProgressView()
                     .controlSize(.small)
-                Text("Checking Relay status…")
+                Text("Checking Runtime status…")
             }
             .font(.footnote)
             .foregroundStyle(AppTheme.textSecondary)
@@ -169,9 +199,9 @@ struct SettingsView: View {
     private var connectionHelp: LocalizedStringKey {
         switch viewModel.connectionProfile {
         case .simulator:
-            "Simulator uses the Mac loopback address and port 18767."
+            "Simulator uses the source Runtime Gateway on Mac loopback port 18874."
         case .iPhone:
-            "Physical iPhone uses port 18768. Replace 127.0.0.1 with this Mac's LAN IP or .local hostname."
+            "Physical iPhone uses the Runtime Gateway. Replace 127.0.0.1 with this Mac's LAN IP or .local hostname."
         }
     }
 }

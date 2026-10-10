@@ -19,7 +19,6 @@
 		A1000000000000000000000A /* PromptComposer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000A /* PromptComposer.swift */; };
 		A1000000000000000000000B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000B /* SettingsView.swift */; };
 		A1000000000000000000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000C /* Assets.xcassets */; };
-		A1000000000000000000000D /* RelayClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000D /* RelayClient.swift */; };
 		A1000000000000000000000E /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000E /* Localization.swift */; };
 		A1000000000000000000000F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = V10000000000000000000001 /* Localizable.strings */; };
 		A10000000000000000000010 /* VoiceTranscriptionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* VoiceTranscriptionController.swift */; };
@@ -35,15 +34,21 @@
 		A1000000000000000000001A /* WorkspaceComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001C /* WorkspaceComponents.swift */; };
 		A1000000000000000000001B /* ComposerDock.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* ComposerDock.swift */; };
 		A1000000000000000000001C /* TurnSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001E /* TurnSessionStore.swift */; };
-		A1000000000000000000001D /* RelayWireTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* RelayWireTypes.swift */; };
 		A1000000000000000000001E /* WorkspaceSupportViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* WorkspaceSupportViews.swift */; };
 		A1000000000000000000001F /* ProjectDrawerComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* ProjectDrawerComponents.swift */; };
 		A10000000000000000000020 /* MemoryDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000022 /* MemoryDiagnostics.swift */; };
 		A10000000000000000000021 /* Diagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* Diagnostics.swift */; };
 		A10000000000000000000022 /* DiagnosticFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000024 /* DiagnosticFileStore.swift */; };
 		A10000000000000000000023 /* MetricKitDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000025 /* MetricKitDiagnostics.swift */; };
+		A10000000000000000000024 /* RuntimeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000026 /* RuntimeModels.swift */; };
+		A10000000000000000000025 /* SSEDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000027 /* SSEDecoder.swift */; };
+		A10000000000000000000026 /* KeychainCredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000028 /* KeychainCredentialStore.swift */; };
+		A10000000000000000000027 /* RuntimeAuthSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000029 /* RuntimeAuthSession.swift */; };
+		A10000000000000000000028 /* RuntimeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000002A /* RuntimeClient.swift */; };
+		A10000000000000000000029 /* RuntimeRelayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000002B /* RuntimeRelayService.swift */; };
 		A20000000000000000000001 /* WorkspaceSkeletonUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* WorkspaceSkeletonUITests.swift */; };
 		A30000000000000000000001 /* TurnSessionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30000000000000000000001 /* TurnSessionStoreTests.swift */; };
+		A30000000000000000000002 /* RuntimeClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30000000000000000000002 /* RuntimeClientTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -77,7 +82,6 @@
 		B1000000000000000000000A /* PromptComposer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptComposer.swift; sourceTree = "<group>"; };
 		B1000000000000000000000B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B1000000000000000000000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		B1000000000000000000000D /* RelayClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelayClient.swift; sourceTree = "<group>"; };
 		B1000000000000000000000E /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		B1000000000000000000000F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B10000000000000000000010 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
@@ -95,17 +99,23 @@
 		B1000000000000000000001C /* WorkspaceComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceComponents.swift; sourceTree = "<group>"; };
 		B1000000000000000000001D /* ComposerDock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerDock.swift; sourceTree = "<group>"; };
 		B1000000000000000000001E /* TurnSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnSessionStore.swift; sourceTree = "<group>"; };
-		B1000000000000000000001F /* RelayWireTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelayWireTypes.swift; sourceTree = "<group>"; };
 		B10000000000000000000020 /* WorkspaceSupportViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSupportViews.swift; sourceTree = "<group>"; };
 		B10000000000000000000021 /* ProjectDrawerComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDrawerComponents.swift; sourceTree = "<group>"; };
 		B10000000000000000000022 /* MemoryDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDiagnostics.swift; sourceTree = "<group>"; };
 		B10000000000000000000023 /* Diagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diagnostics.swift; sourceTree = "<group>"; };
 		B10000000000000000000024 /* DiagnosticFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticFileStore.swift; sourceTree = "<group>"; };
 		B10000000000000000000025 /* MetricKitDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricKitDiagnostics.swift; sourceTree = "<group>"; };
+		B10000000000000000000026 /* RuntimeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeModels.swift; sourceTree = "<group>"; };
+		B10000000000000000000027 /* SSEDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSEDecoder.swift; sourceTree = "<group>"; };
+		B10000000000000000000028 /* KeychainCredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainCredentialStore.swift; sourceTree = "<group>"; };
+		B10000000000000000000029 /* RuntimeAuthSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeAuthSession.swift; sourceTree = "<group>"; };
+		B1000000000000000000002A /* RuntimeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeClient.swift; sourceTree = "<group>"; };
+		B1000000000000000000002B /* RuntimeRelayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeRelayService.swift; sourceTree = "<group>"; };
 		B20000000000000000000000 /* CodexRemoteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CodexRemoteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B20000000000000000000001 /* WorkspaceSkeletonUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSkeletonUITests.swift; sourceTree = "<group>"; };
 		B30000000000000000000000 /* CodexRemoteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CodexRemoteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B30000000000000000000001 /* TurnSessionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnSessionStoreTests.swift; sourceTree = "<group>"; };
+		B30000000000000000000002 /* RuntimeClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeClientTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -195,6 +205,7 @@
 			children = (
 				B10000000000000000000003 /* RelayModels.swift */,
 				B10000000000000000000015 /* ThreadTranscript.swift */,
+				B10000000000000000000026 /* RuntimeModels.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -202,12 +213,23 @@
 		D10000000000000000000006 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				D1000000000000000000000A /* Runtime */,
 				B10000000000000000000004 /* RelayService.swift */,
-				B1000000000000000000000D /* RelayClient.swift */,
-				B1000000000000000000001F /* RelayWireTypes.swift */,
 				B10000000000000000000005 /* MockRelayService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		D1000000000000000000000A /* Runtime */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000027 /* SSEDecoder.swift */,
+				B10000000000000000000028 /* KeychainCredentialStore.swift */,
+				B10000000000000000000029 /* RuntimeAuthSession.swift */,
+				B1000000000000000000002A /* RuntimeClient.swift */,
+				B1000000000000000000002B /* RuntimeRelayService.swift */,
+			);
+			path = Runtime;
 			sourceTree = "<group>";
 		};
 		D10000000000000000000007 /* Features */ = {
@@ -263,6 +285,7 @@
 			isa = PBXGroup;
 			children = (
 				B30000000000000000000001 /* TurnSessionStoreTests.swift */,
+				B30000000000000000000002 /* RuntimeClientTests.swift */,
 			);
 			path = CodexRemoteTests;
 			sourceTree = "<group>";
@@ -409,10 +432,14 @@
 				A10000000000000000000020 /* MemoryDiagnostics.swift in Sources */,
 				A10000000000000000000003 /* RelayModels.swift in Sources */,
 				A10000000000000000000013 /* ThreadTranscript.swift in Sources */,
+				A10000000000000000000024 /* RuntimeModels.swift in Sources */,
 				A10000000000000000000004 /* RelayService.swift in Sources */,
+				A10000000000000000000025 /* SSEDecoder.swift in Sources */,
+				A10000000000000000000026 /* KeychainCredentialStore.swift in Sources */,
+				A10000000000000000000027 /* RuntimeAuthSession.swift in Sources */,
+				A10000000000000000000028 /* RuntimeClient.swift in Sources */,
+				A10000000000000000000029 /* RuntimeRelayService.swift in Sources */,
 				A10000000000000000000005 /* MockRelayService.swift in Sources */,
-				A1000000000000000000000D /* RelayClient.swift in Sources */,
-				A1000000000000000000001D /* RelayWireTypes.swift in Sources */,
 				A10000000000000000000006 /* WorkspaceViewModel.swift in Sources */,
 				A1000000000000000000001C /* TurnSessionStore.swift in Sources */,
 				A10000000000000000000007 /* WorkspaceView.swift in Sources */,
@@ -447,6 +474,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A30000000000000000000001 /* TurnSessionStoreTests.swift in Sources */,
+				A30000000000000000000002 /* RuntimeClientTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -288,10 +288,12 @@ struct ProjectDetailView: View {
                         Text(verbatim: project.name)
                             .font(.system(size: 24, weight: .bold))
                             .foregroundStyle(AppTheme.textPrimary)
-                        Text(verbatim: compactPath(project.path))
-                            .font(.system(size: 13))
-                            .foregroundStyle(AppTheme.textSecondary)
-                            .lineLimit(2)
+                        if !project.path.isEmpty {
+                            Text(verbatim: compactPath(project.path))
+                                .font(.system(size: 13))
+                                .foregroundStyle(AppTheme.textSecondary)
+                                .lineLimit(2)
+                        }
                     }
                     Spacer()
                 }

@@ -53,7 +53,6 @@
 "Sessions" = "Sessions";
 "Settings" = "Settings";
 "Simulator" = "Simulator";
-"Simulator uses the Mac loopback address and port 18767." = "Simulator uses the Mac loopback address and port 18767.";
 "Start a task" = "Start a task";
 "Start turn" = "Start turn";
 "Status" = "Status";
@@ -63,8 +62,6 @@
 "Updated" = "Updated";
 "Version" = "Version";
 "Waiting for Codex to start" = "Waiting for Codex to start";
-"WebSocket URL" = "WebSocket URL";
-"Physical iPhone uses port 18768. Replace 127.0.0.1 with this Mac's LAN IP or .local hostname." = "Physical iPhone uses port 18768. Replace 127.0.0.1 with this Mac's LAN IP or .local hostname.";
 "Working" = "Working";
 "Workspace" = "Workspace";
 "sessions" = "sessions";
@@ -192,3 +189,16 @@
 "Export diagnostics" = "Export diagnostics";
 "CodexRemote diagnostics" = "CodexRemote diagnostics";
 "Includes bounded structured events and Apple system diagnostics. Conversation content and credentials are never included." = "Includes bounded structured events and Apple system diagnostics. Conversation content and credentials are never included.";
+"Pair this iPhone" = "Pair this iPhone";
+"Pairing link or code" = "Pairing link or code";
+"Pair device" = "Pair device";
+"Checking this device's access…" = "Checking this device's access…";
+"Exchanging the one-time pairing code…" = "Exchanging the one-time pairing code…";
+"Paste the one-time link printed by codex-remote pair." = "Paste the one-time link printed by codex-remote pair.";
+"This iPhone is paired." = "This iPhone is paired.";
+"Authentication" = "Authentication";
+"Device access" = "Device access";
+"Sign out" = "Sign out";
+"Refresh credentials are stored in this iPhone's Keychain and are never written to diagnostics." = "Refresh credentials are stored in this iPhone's Keychain and are never written to diagnostics.";
+"Runtime URL" = "Runtime URL";
+"Checking Runtime status…" = "Checking Runtime status…";

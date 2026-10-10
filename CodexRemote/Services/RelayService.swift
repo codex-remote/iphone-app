@@ -25,13 +25,12 @@ enum RelayConnectionProfile: String, CaseIterable, Identifiable, Sendable {
 
     var defaultPort: Int {
         switch self {
-        case .simulator: 18_767
-        case .iPhone: 18_768
+        case .simulator, .iPhone: 18_874
         }
     }
 
-    var defaultURL: String { "ws://127.0.0.1:\(defaultPort)/ws/app" }
-    var urlDefaultsKey: String { "relayURL.\(rawValue)" }
+    var defaultURL: String { "http://127.0.0.1:\(defaultPort)" }
+    var urlDefaultsKey: String { "runtimeURL.\(rawValue)" }
 
     static var current: RelayConnectionProfile {
 #if targetEnvironment(simulator)
@@ -67,11 +66,21 @@ protocol RelayServiceProtocol: AnyObject {
     func requestExecutionProfiles(projectID: String) async
     func requestThreads(projectID: String) async
     func requestThread(projectID: String, threadID: String) async
+    func selectContext(projectID: String, threadID: String?)
     func startTurn(projectID: String, threadID: String?, prompt: String, permissionProfileID: String?) async
     func interruptTurn() async
     func acknowledgeTurn(traceID: String, turnID: String, phase: TurnPhase) async
+    func pair(codeOrLink: String) async
+    func signOut() async
+    func suspend() async
+    func resume() async
 }
 
 extension RelayServiceProtocol {
     var bootstrapState: RelayBootstrapState? { nil }
+    func pair(codeOrLink: String) async {}
+    func signOut() async {}
+    func selectContext(projectID: String, threadID: String?) {}
+    func suspend() async {}
+    func resume() async { await connect() }
 }
